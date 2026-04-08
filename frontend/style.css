@@ -52,6 +52,7 @@ form{
     text-transform: uppercase;
     border-radius: 10px;
     font-size: 16px;
+    color: white;
   }
 
   button:hover{
@@ -102,3 +103,77 @@ a{
 
 }
 
+#formContainer{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#signup-form{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 500px;
+  border: 2px solid black;
+  color: white;
+}
+
+#signup-heading{
+  text-align: center;
+}
+
+.hidden{
+  display: none !important;
+}
+
+.labelInputSet{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.labelInputSet label{
+  width: 160px;
+  text-align: right;
+}
+
+#ApplicantSignUp{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap:5px
+}
+
+#signup-form input{
+  width: 80px;
+}
+
+.leftFields, .rightFields{
+  display: flex;
+  flex-direction: column;
+  gap:10px;
+}
+
+#signup-btn{
+    background-color: transparent;
+    display: block;
+    margin: auto;
+    padding: 5px;
+    border: 2px solid white;
+    text-transform: uppercase;
+    border-radius: 10px;
+    font-size: 16px;
+    color: white;
+    width: 100px;
+}
+
+select{
+  width: 100px;
+}
+
+#ProviderSignUp{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap:5px
+}
