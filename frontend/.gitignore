@@ -1,5 +1,11 @@
-node_modules
-serviceAccountKey.json
+**/node_modules/
+
+**/serviceAccountKey.json
+
 .env
+
 dist/
 build/
+
+.DS_Store
+*.log
