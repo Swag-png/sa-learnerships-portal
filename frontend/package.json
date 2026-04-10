@@ -1,0 +1,15 @@
+{
+  "name": "sa-learnerships-portal-frontend",
+  "version": "1.0.0",
+  "description": "Frontend for SA Learnerships Portal",
+  "private": true,
+  "scripts": {
+    "test": "echo \"No tests yet\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "firebase": "^12.12.0"
+  }
+}
