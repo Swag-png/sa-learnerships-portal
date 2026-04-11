@@ -40,5 +40,11 @@ app.post("/signup/provider", async (req, res) => {
     res.send("Provider saved");
 });
 
-const PORT =process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// 👇 IMPORTANT: export app for testing
+module.exports = app;
+
+// 👇 Only run server if NOT testing
+if (process.env.NODE_ENV !== "test") {
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+}
