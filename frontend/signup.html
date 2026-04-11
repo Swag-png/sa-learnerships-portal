@@ -11,6 +11,7 @@
          <form id="signup-form" method="post">
         <header>
             <h2 id="signup-heading">Sign up</h2>
+            <label id="successConfirm" class="hidden">Sign up successful!</label>
         </header>
         <label for="role">Role</label>
 <select id="role" name="role">
@@ -71,7 +72,7 @@
                 </section>
                 <section class="labelInputSet">
                     <label for="city">City</label>
-                    <input name="city" type="text" id="city">
+                    <input name="city" type="text" id="orgcity">
                 </section>
                 <section class="labelInputSet">
                     <label for="password">Password</label>
@@ -85,7 +86,7 @@
                 </section>
                 <section class="labelInputSet">
                     <label for="phoneNumber">Telephone number</label>
-                    <input name="phoneNumber" type="number" id="phoneNumber">
+                    <input name="phoneNumber" type="number" id="orgphoneNumber">
                 </section>
                 <section class="labelInputSet">
                     <label for="confirm-password">Confirm Password</label>
@@ -93,11 +94,11 @@
                 </section>
                  <section class="labelInputSet">
                     <label for="username">Username</label>
-                    <input name="username" type="text" id="username">
+                    <input name="username" type="text" id="orgusername">
                 </section>
             </section>
         </section>
-         <button id="signup-btn">Sign up</button>
+         <button type="button" id="signup-btn">Sign up</button>
     </form>
     </section>
    
