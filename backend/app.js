@@ -2,6 +2,40 @@ const express = require('express');
 const app = express();
 const cors = require("cors");
 
+//Importing "Authorize" function from access-logic
+const {authorize} = require('./backend/access-logic');
+
+// The Middleware "Guard"
+function guard(route) {
+    //
+    return (req, res, next) => {
+        // req.user is usually set after a login process
+        const user = req.user; 
+
+        if (user && authorize(user, route)) {
+            next(); // Access granted: move to the actual page logic
+        } else {
+            // Access denied: send a 403 error or redirect to login
+            res.status(403).send("Forbidden: You do not have access to this route.");
+        }
+    };
+}
+
+// Applying the restriction to applicant route
+app.get('/applicant-home', guard('/applicant-home'), (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'applicant-home.html'));
+});
+
+// Applying the restriction to admin route
+app.get('/admin-dashboard', guard('/admin-dashboard'), (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'admin-dashboard.html'));
+});
+
+// Applying the restriction to provider route
+app.get('/provider-home', guard('/provider-home'), (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'admin-dashboard.html'));
+});
+
 app.use(cors());
 
 app.use(express.json());
