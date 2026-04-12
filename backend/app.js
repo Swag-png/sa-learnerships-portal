@@ -1,9 +1,14 @@
 const express = require('express');
-const app = express();
+const path = require('path'); // Required for res.sendFile
 const cors = require("cors");
+const { db, admin } = require("./firebaseAdmin");
+//Importing "Authorize" function from access-logic
+const { authorize } = require('./access-logic');
 
+const app = express();
+
+// Middleware should be defined before routes
 app.use(cors());
-
 app.use(express.json());
 
 const multer = require("multer");
@@ -11,23 +16,13 @@ const upload = multer({ dest: "uploads/" });
 
 const { db, admin } = require("./firebaseAdmin");
 
-app.post("/signup/applicant", upload.single("cv"), async (req, res) => {
-    const {
-        uid,
-        firstname,
-        lastname,
-        email,
-        username,
-        institution,
-        city,
-        phonenumber,
-        role
-    } = req.body;
+app.post("/signup/applicant", async (req, res) => {
+    const { uid, firstname ,lastname, email, username, institution, city, phonenumber, cv, role} = req.body;
+    //Must remove console.log() before deploying as it contains private user data
+    console.log(req.body);
+    try{
+        await admin.auth().setCustomUserClaims(uid, { role: "applicant" });
 
-    try {
-        console.log("Creating user...");
-
-       
         await db.collection("users").doc(uid).set({
             firstname,
             lastname,
@@ -103,5 +98,5 @@ app.post("/signup/provider", async (req, res) => {
     }
 });
 
-const PORT =process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

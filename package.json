@@ -1,0 +1,31 @@
+{
+  "name": "sa-learnerships-portal",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "mocha tests/control-access.test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Swag-png/sa-learnerships-portal.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Swag-png/sa-learnerships-portal/issues"
+  },
+  "homepage": "https://github.com/Swag-png/sa-learnerships-portal#readme",
+  "devDependencies": {
+    "mocha": "^11.3.0"
+  },
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
