@@ -11,7 +11,6 @@
          <form id="signup-form" method="post">
         <header>
             <h2 id="signup-heading">Sign up</h2>
-            <label id="successConfirm" class="hidden">Sign up successful!</label>
         </header>
         <label for="role">Role</label>
 <select id="role" name="role">
@@ -19,91 +18,109 @@
     <option value="Provider">Provider</option>
 </select>
         <section id="ApplicantSignUp" class="">
-            <section class="leftFields">
-                <section class="labelInputSet">
-                    <label for="firstName">First name</label>
-                    <input name="firstName" type="text" id="firstName">
-                </section>
-                <section class="labelInputSet">
-                    <label for="applicantEmail">Email</label>
-                    <input name="applicantEmail" type="email" id="applicantEmail">
-                </section>
-                <section class="labelInputSet">
-                    <label for="institution">Institution</label>
-                    <input name="institution" type="text" id="institution">
-                </section>
-                <section class="labelInputSet">
-                    <label for="phoneNumber">Phone number</label>
-                    <input name="phoneNumber" type="number" id="phoneNumber">
-                </section>
-                <section class="labelInputSet">
-                    <label for="password">Password</label>
-                    <input name="password" type="password" id="password">
-                </section>
-            </section>
-            <section class="rightFields">
-                 <section class="labelInputSet">
-                    <label for="lastName">Last name</label>
-                    <input name="lastName" type="text" id="lastName">
-                </section>
-                <section class="labelInputSet">
-                    <label for="username">Username</label>
-                    <input name="username" type="text" id="username">
-                </section>
-                <section class="labelInputSet">
-                    <label for="city">City</label>
-                    <input name="city" type="text" id="city">
-                </section>
-                <section class="labelInputSet">
-                    <label for="cv">Curriculum Vitae</label>
-                    <input name="cv" type="file" id="cv">
-                </section>
-                <section class="labelInputSet">
-                    <label for="confirm-password">Confirm password</label>
-                    <input name="confirm-password" type="password" id="confirm-password">
-                </section>
-            </section>
+    <section class="leftFields">
+        <section class="labelInputSet">
+            <label id="errorFname" class="red">Please enter your first name</label>
+            <label for="firstName">First name</label>
+            <input name="firstName" type="text" id="firstName" required>
         </section>
-        <section id="ProviderSignUp" class="hidden">
-            <section class="leftFields">
-                <section class="labelInputSet">
-                    <label for="org">Organization</label>
-                    <input name="org" type="text" id="org">
-                </section>
-                <section class="labelInputSet">
-                    <label for="city">City</label>
-                    <input name="city" type="text" id="orgcity">
-                </section>
-                <section class="labelInputSet">
-                    <label for="password">Password</label>
-                    <input name="password" type="password" id="password">
-                </section>
-            </section>
-            <section class="rightFields">
-                <section class="labelInputSet">
-                    <label for="email">Email</label>
-                    <input name="email" type="email" id="email">
-                </section>
-                <section class="labelInputSet">
-                    <label for="phoneNumber">Telephone number</label>
-                    <input name="phoneNumber" type="number" id="orgphoneNumber">
-                </section>
-                <section class="labelInputSet">
-                    <label for="confirm-password">Confirm Password</label>
-                    <input name="confirm-password" type="password" id="confirm-password">
-                </section>
-                 <section class="labelInputSet">
-                    <label for="username">Username</label>
-                    <input name="username" type="text" id="orgusername">
-                </section>
-            </section>
+        <section class="labelInputSet">
+            <label id="errorEmail" class="red">Please enter your email</label>
+            <label for="applicantEmail">Email</label>
+            <input name="applicantEmail" type="email" id="applicantEmail" required>
         </section>
-         <button type="button" id="signup-btn">Sign up</button>
+        <section class="labelInputSet">
+            <label id="errorInst" class="red">Please enter your institution</label>
+            <label for="institution">Institution</label>
+            <input name="institution" type="text" id="institution" required>
+        </section>
+        <section class="labelInputSet">
+            <label id="errorPhone" class="red">Please enter your phone number</label>
+            <label for="phoneNumber">Phone number</label>
+            <input name="phoneNumber" type="number" id="phoneNumber" required minlength="10" maxlength="10">
+        </section>
+        <section class="labelInputSet">
+            <label id="errorPass" class="red">Please enter your password</label>
+            <label for="password">Password</label>
+            <input name="password" type="password" id="password" required>
+        </section>
+    </section>
+    <section class="rightFields">
+        <section class="labelInputSet">
+            <label for="lastName">Last name</label>
+            <input name="lastName" type="text" id="lastName" required>
+            <label id="errorLname" class="red">Please enter your last name</label>
+        </section>
+        <section class="labelInputSet">
+            <label for="username">Username</label>
+            <input name="username" type="text" id="username" required>
+            <label id="errorUsername" class="red">Please enter your username</label>
+        </section>
+        <section class="labelInputSet">
+            <label for="city">City</label>
+            <input name="city" type="text" id="city" required>
+            <label id="errorCity" class="red">Please enter your city</label>
+        </section>
+        <section class="labelInputSet">
+            <label for="cv">Curriculum Vitae</label>
+            <input name="cv" type="file" id="cv" required>
+            <label id="errorCv" class="red">Please add your cv</label>
+        </section>
+        <section class="labelInputSet">
+            <label for="confirm-password">Confirm password</label>
+            <input name="confirm-password" type="password" id="confirm-password" required>
+            <label id="errorConfPass" class="red">Please enter your password confirmation</label>
+        </section>
+    </section>
+</section>
+
+<section id="ProviderSignUp" class="hidden">
+    <section class="leftFields">
+        <section class="labelInputSet">
+            <label id="errorPUName" class="red">Please add your username</label>
+            <label for="username">Username</label>
+            <input name="username" type="text" id="orgusername" required>
+        </section>
+        <section class="labelInputSet">
+            <label id="errorOrg" class="red">Please add your organization</label>
+            <label for="org">Organization</label>
+            <input name="org" type="text" id="org" required>
+        </section>
+        <section class="labelInputSet">
+            <label id="errorPCity" class="red">Please add your city</label>
+            <label for="city">City</label>
+            <input name="city" type="text" id="orgcity" required>
+        </section>
+        <section class="labelInputSet">
+            <label id="errorPPass" class="red">Please add your password</label>
+            <label for="password">Password</label>
+            <input name="password" type="password" id="provider-password" required>
+        </section>
+    </section>
+    <section class="rightFields">
+        <section class="labelInputSet">
+            <label for="email">Email</label>
+            <input name="email" type="email" id="email" required>
+            <label id="errorPEmail" class="red">Please add your email</label>
+        </section>
+        <section class="labelInputSet">
+            <label for="phoneNumber">Telephone number</label>
+            <input name="phoneNumber" type="number" id="orgphoneNumber" required minlength="10" maxlength="10">
+            <label id="errorPNumber" class="red">Please add your phone number</label>
+        </section>
+        <section class="labelInputSet">
+            <label for="confirm-password">Confirm Password</label>
+            <input name="confirm-password" type="password" id="provider-confirm-password" required>
+            <label id="errorPConfPass" class="red">Please confirm your password</label>
+        </section>
+    </section>
+</section>
+         <button type="submit" id="signup-btn">Sign up</button>
     </form>
     </section>
    
     
     <footer></footer>
-    <script src="script.js"></script>
+    <script type="module" src="script.js"></script>
 </body>
 </html>
