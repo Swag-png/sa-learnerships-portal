@@ -24,5 +24,8 @@
   "homepage": "https://github.com/Swag-png/sa-learnerships-portal#readme",
   "devDependencies": {
     "mocha": "^11.3.0"
+  },
+  "dependencies": {
+    "express": "^5.2.1"
   }
 }

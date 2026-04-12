@@ -1,9 +1,15 @@
 const express = require('express');
-const app = express();
+const path = require('path'); // Required for res.sendFile
 const cors = require("cors");
-
+const { db, admin } = require("./firebaseAdmin");
 //Importing "Authorize" function from access-logic
-const {authorize} = require('./backend/access-logic');
+const { authorize } = require('./access-logic');
+
+const app = express();
+
+// Middleware should be defined before routes
+app.use(cors());
+app.use(express.json());
 
 // The Middleware "Guard"
 function guard(route) {
@@ -23,24 +29,18 @@ function guard(route) {
 
 // Applying the restriction to applicant route
 app.get('/applicant-home', guard('/applicant-home'), (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'applicant-home.html'));
+    res.sendFile(path.join(__dirname, '..', 'frontend', 'applicant-home.html'));
 });
 
 // Applying the restriction to admin route
 app.get('/admin-dashboard', guard('/admin-dashboard'), (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'admin-dashboard.html'));
+    res.sendFile(path.join(__dirname, '..', 'frontend', 'admin-dashboard.html'));
 });
 
 // Applying the restriction to provider route
 app.get('/provider-home', guard('/provider-home'), (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'admin-dashboard.html'));
+    res.sendFile(path.join(__dirname, '..', 'frontend', 'provider-home.html'));
 });
-
-app.use(cors());
-
-app.use(express.json());
-
-const { db, admin } = require("./firebaseAdmin");
 
 app.post("/signup/applicant", async (req, res) => {
     const { uid, firstname ,lastname, email, username, institution, city, phonenumber, cv, role} = req.body;
@@ -95,5 +95,5 @@ app.post("/signup/provider", async (req, res) => {
     }
 });
 
-const PORT =process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
