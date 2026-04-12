@@ -1,70 +1,154 @@
-/**
- * ROLE ASSIGNMENT MANUAL TEST SUITE
- * Developer: Alex
- * Module: Backend / Firebase Admin Integration
- */
+const request = require("supertest");
 
-const testScenarios = [
-    {
-        id: "TC-01",
-        description: "Verify standard Applicant signup",
-        url: "http://localhost:3000/signup/applicant",
-        method: "POST",
-        data: {
-            uid: "manual_test_uid_001",
-            email: "applicant@test.com",
-            firstname: "John",
-            lastname: "Doe"
-        },
-        expected: "Status 201, Firestore Role: 'applicant', Custom Claim: 'applicant'"
-    },
-    {
-        id: "TC-02",
-        description: "Verify standard Provider signup",
-        url: "http://localhost:3000/signup/provider",
-        method: "POST",
-        data: {
-            uid: "manual_test_uid_002",
-            email: "hr@company.com",
-            organization: "SkillUp Academy"
-        },
-        expected: "Status 201, Firestore Role: 'provider', Custom Claim: 'provider'"
-    },
-    {
-        id: "TC-03",
-        description: "Security Check: Ensure role cannot be spoofed",
-        url: "http://localhost:3000/signup/applicant",
-        method: "POST",
-        data: {
-            uid: "hacker_uid_999",
-            email: "hacker@evil.com",
-            role: "admin" // Trying to trick the system
-        },
-        expected: "Status 201, Role MUST be overwritten to 'applicant'"
-    },
-    {
-        id: "TC-04",
-        description: "Failure Path: Missing UID",
-        url: "http://localhost:3000/signup/applicant",
-        method: "POST",
-        data: {
-            // Empty body or missing UID
-            email: "error@test.com" 
-        },
-        expected: "Status 500, Error Message: 'Failed to assign role'"
-    }
-];
+// ─── Hoisted Mocks ────────────────────────────────────────────────────────────
+let mockSet;
+let mockSetCustomClaims;
 
-console.log("ROLE ASSIGNMENT TEST\n");
+jest.mock("../backend/firebaseAdmin", () => {
+    mockSet             = jest.fn().mockResolvedValue();
+    mockSetCustomClaims = jest.fn().mockResolvedValue();
 
-testScenarios.forEach((test) => {
-    
-    console.log(`[${test.id}]`);
-    console.log(`Description : ${test.description || 'No description'}`);
-    console.log(`Endpoint    : ${test.method} ${test.url}`);
-    console.log(`Payload     : ${JSON.stringify(test.payload || test.data)}`);
-    console.log(`Expected    : ${test.expected}`);
-    console.log("-".repeat(100));
+    return {
+        admin: {
+            auth: () => ({
+                setCustomUserClaims: mockSetCustomClaims
+            })
+        },
+        db: {
+            collection: () => ({
+                doc: () => ({
+                    set: mockSet
+                })
+            })
+        }
+    };
 });
 
-console.log(`\nTotal Scenarios Defined: ${testScenarios.length}\n`);
+const app = require("../backend/app");
+
+// ─── Reset mocks between tests ────────────────────────────────────────────────
+beforeEach(() => {
+    mockSet.mockReset();
+    mockSetCustomClaims.mockReset();
+    mockSet.mockResolvedValue();
+    mockSetCustomClaims.mockResolvedValue();
+});
+
+// ─── TC-01: Applicant Role Assignment ────────────────────────────────────────
+describe("TC-01: Applicant Role Assignment", () => {
+    it("should assign 'applicant' role in Firestore and as a custom claim", async () => {
+        let savedData   = {};
+        let savedClaims = {};
+
+        mockSet.mockImplementationOnce((data) => {
+            savedData = data;
+            return Promise.resolve();
+        });
+
+        mockSetCustomClaims.mockImplementationOnce((uid, claims) => {
+            savedClaims = claims;
+            return Promise.resolve();
+        });
+
+        const res = await request(app)
+            .post("/signup/applicant")
+            .send({
+                uid:         "manual_test_uid_001",
+                email:       "applicant@test.com",
+                firstname:   "John",
+                lastname:    "Doe",
+                username:    "johndoe",
+                institution: "Test University",
+                city:        "Cape Town",
+                phonenumber: "+27821234567",
+                cv:          ""
+            });
+
+        expect(res.statusCode).toBe(201);
+        expect(savedData.role).toBe("applicant");
+        expect(savedClaims.role).toBe("applicant");
+    });
+});
+
+// ─── TC-02: Provider Role Assignment ─────────────────────────────────────────
+describe("TC-02: Provider Role Assignment", () => {
+    it("should assign 'provider' role in Firestore and as a custom claim", async () => {
+        let savedData   = {};
+        let savedClaims = {};
+
+        mockSet.mockImplementationOnce((data) => {
+            savedData = data;
+            return Promise.resolve();
+        });
+
+        mockSetCustomClaims.mockImplementationOnce((uid, claims) => {
+            savedClaims = claims;
+            return Promise.resolve();
+        });
+
+        const res = await request(app)
+            .post("/signup/provider")
+            .send({
+                uid:          "manual_test_uid_002",
+                email:        "hr@company.com",
+                organization: "SkillUp Academy",
+                city:         "Johannesburg",
+                phonenumber:  "+27831234567",
+                username:     "skillup_hr"
+            });
+
+        expect(res.statusCode).toBe(201);
+        expect(savedData.role).toBe("provider");
+        expect(savedClaims.role).toBe("provider");
+    });
+});
+
+// ─── TC-03: Security Check — Role Spoofing ────────────────────────────────────
+describe("TC-03: Role Spoofing Attempt", () => {
+    it("should overwrite spoofed 'admin' role and assign 'applicant' instead", async () => {
+        let savedData   = {};
+        let savedClaims = {};
+
+        mockSet.mockImplementationOnce((data) => {
+            savedData = data;
+            return Promise.resolve();
+        });
+
+        mockSetCustomClaims.mockImplementationOnce((uid, claims) => {
+            savedClaims = claims;
+            return Promise.resolve();
+        });
+
+        const res = await request(app)
+            .post("/signup/applicant")
+            .send({
+                uid:   "hacker_uid_999",
+                email: "hacker@evil.com",
+                role:  "admin"
+            });
+
+        expect(res.statusCode).toBe(201);
+        expect(savedData.role).toBe("applicant");
+        expect(savedData.role).not.toBe("admin");
+        expect(savedClaims.role).toBe("applicant");
+        expect(savedClaims.role).not.toBe("admin");
+    });
+});
+
+// ─── TC-04: Failure Path — Missing UID ───────────────────────────────────────
+describe("TC-04: Missing UID", () => {
+    it("should return 500 when UID is missing and role assignment fails", async () => {
+        mockSetCustomClaims.mockRejectedValueOnce(
+            new Error("UID is required by Firebase")
+        );
+
+        const res = await request(app)
+            .post("/signup/applicant")
+            .send({
+                email: "error@test.com"
+            });
+
+        expect(res.statusCode).toBe(500);
+        expect(res.body.error).toBe("Failed to create applicant");
+    });
+});
