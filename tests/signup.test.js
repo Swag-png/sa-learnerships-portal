@@ -22,6 +22,8 @@ describe("Signup Page Tests", () => {
     const password = "123";
 
     expect(password.length).toBeLessThan(8);
-  });
+  });``
+
+ 
 
 });

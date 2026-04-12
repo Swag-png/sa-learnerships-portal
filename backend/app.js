@@ -11,6 +11,10 @@ const db = require("./firebaseAdmin");
 app.post("/signup/applicant", async (req, res) => {
     const { uid, firstname ,lastname, email, username, institution, city, phonenumber, cv, role} = req.body;
     console.log(req.body);
+
+    if (!email) {
+        return res.status(400).json({ error: "Email is required" });
+    }
     await db.collection("users").add({
         firstname,
         lastname,
@@ -27,7 +31,9 @@ app.post("/signup/applicant", async (req, res) => {
 
 app.post("/signup/provider", async (req, res) => {
     const { uid, organization, email, city, phonenumber, username, role } = req.body;
-
+    if (!email) {
+        return res.status(400).json({ error: "Email is required" });
+    }
     await db.collection("users").add({
         organization,
         email,

@@ -31,6 +31,7 @@ form{
 .forgot-password{
 
 }
+
   label{
     margin-top: 10px;
     text-transform: capitalize;
@@ -99,14 +100,15 @@ a{
 
 .login{
   width:200px;
-
-
 }
 
 #formContainer{
   display: flex;
   justify-content: center;
   align-items: center;
+  height: 100vh;
+  font: bold;
+  color: white;
 }
 
 #signup-form{
@@ -126,32 +128,36 @@ a{
   display: none !important;
 }
 
+#ApplicantSignUp,
+#ProviderSignUp {
+    display: flex;
+    flex-direction: row;
+    gap: 24px;
+    width: 100%;
+}
 .labelInputSet{
   display: flex;
-  align-items: center;
-  gap: 10px;
+  flex-direction: column;
+  gap: 4px;
+  flex:1;
 }
 
 .labelInputSet label{
-  width: 160px;
-  text-align: right;
+  width: 200px;
+  text-align: left;
 }
 
-#ApplicantSignUp{
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap:5px
-}
+
 
 #signup-form input{
-  width: 80px;
+  width: 180px;
 }
 
-.leftFields, .rightFields{
+.leftFields, .rightFields {
   display: flex;
   flex-direction: column;
-  gap:10px;
+  gap: 12px;
+  flex: 1; /* both columns share space equally */
 }
 
 #signup-btn{
@@ -167,6 +173,8 @@ a{
     width: 100px;
 }
 
+
+
 select{
   width: 100px;
 }
@@ -176,4 +184,32 @@ select{
   align-items: center;
   justify-content: center;
   gap:5px
+}
+
+.phone-wrapper {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  border: black;
+  border-radius: 2px;
+}
+
+.phone-wrapper .area-code-select {
+  width: 80px;
+  flex-shrink: 0;
+}
+
+.phone-wrapper input {
+  flex: 1;
+}
+
+.error-msg {
+  display: none;
+  color: red;
+  font-size: 0.78rem;
+  margin-top: 3px;
+}
+
+.error-msg.visible {
+  display: block;
 }

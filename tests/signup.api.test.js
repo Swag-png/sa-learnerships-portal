@@ -20,7 +20,7 @@ describe("Signup API", () => {
         lastname: "Doe",
         email: "john@gmail.com",
         username: "john123",
-        institution: "UJ",
+        institution: "Wits",
         city: "Johannesburg",
         cv: "cv.pdf",
         role: "applicant"
