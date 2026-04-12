@@ -113,7 +113,7 @@ a{
   display: flex;
   flex-direction: column;
   gap: 10px;
-  width: 500px;
+  width: 800px;
   border: 2px solid black;
   color: white;
 }
@@ -127,14 +127,15 @@ a{
 }
 
 .labelInputSet{
+  
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 1px;
 }
 
 .labelInputSet label{
   width: 160px;
-  text-align: right;
+  text-align: center;
 }
 
 #ApplicantSignUp{
@@ -151,7 +152,7 @@ a{
 .leftFields, .rightFields{
   display: flex;
   flex-direction: column;
-  gap:10px;
+  gap:25px;
 }
 
 #signup-btn{
@@ -177,3 +178,16 @@ select{
   justify-content: center;
   gap:5px
 }
+
+.red {
+  color: red;
+  font-size: small;
+  visibility: hidden;
+  width: 160px;
+  text-align: center;
+}
+
+.red.show {
+  visibility: visible;
+}
+
