@@ -6,16 +6,21 @@
     </head>
     <body> 
         <section class="wrapper">
-            
-        <form>
+        <form id="loginForm">
             <img src="SkillsConnect Logo 2.PNG" /> 
-            <h2 class="login-heading" >Login</h2>
+            <h2 class="login-heading">Login</h2>
             <h4>New? <a href="signup.html">Sign up</a></h4>
-            <label>Username or Email Adress:</label>
-            <input type="text" name="username"></input>
+
+            <label>Email Address:</label>
+            <input type="email" id="emailInput" name="email" />
+
             <label>Password:</label>
-            <input type="password" name="password"></input>
+            <input type="password" id="passwordInput" name="password" />
+
             <a href="forgotPassword.html">Forgot your password?</a>
+
+            <!-- error message -->
+            <p id="errorMsg" style="color:red; display:none;"></p>
 
             <section class="form-divider">
                 <p style="text-align: center;">Or</p>
@@ -23,20 +28,27 @@
 
             <section class="form-bottom">
                 <section class="form-socials">
-                    <button class="form-btn form-btn--social">
-                        <img src="google.svg" class="btn-icon" alt="social icon">
+                    <button type="button" class="form-btn form-btn--social" id="googleBtn">
+                        <img src="google.svg" class="btn-icon" alt="Google" />
                     </button>
-                    <button class="">
-                        <img src="apple.svg" class="btn-icon" alt="social icon">
+                    <button type="button" class="form-btn form-btn--social" id="githubBtn">
+                        <img src="github.svg" class="btn-icon" alt="GitHub" />
                     </button>
-                    <button class="form-btn form-btn--social">
-                        <img src="facebook.svg" class="btn-icon" alt="social icon">
+                    <button type="button" class="form-btn form-btn--social" id="facebookBtn">
+                        <img src="facebook.svg" class="btn-icon" alt="Facebook" />
                     </button>
+                </section>
+                <section>
+                    <button type="submit" class="login">Login</button>
+                </section>
             </section>
-           <section>
-            <button clss="login">Login</button>
-    
+
         </form>
-        </body>
         </section>
+
+        <!-- Firebase SDKs -->
+        <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+        <script src="auth.js"></script>
+    </body>
 </html>
