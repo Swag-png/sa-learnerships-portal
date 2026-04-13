@@ -1,11 +1,146 @@
-import { auth } from "./firebase.js";
-import { createUserWithEmailAndPassword } 
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+// ─── Imports (MUST be at top for ES modules) ────────────────────────────────
+import { auth } from "/firebase.js";
+import { 
+    createUserWithEmailAndPassword
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-const dropdown = document.getElementById("role");
+// ─── DOM References ──────────────────────────────────────────────────────────
+const dropdown        = document.getElementById("role");
 const applicantFields = document.getElementById("ApplicantSignUp");
-const providerFields = document.getElementById("ProviderSignUp");
+const providerFields  = document.getElementById("ProviderSignUp");
 
+// ─── Area Code Configuration ─────────────────────────────────────────────────
+const areaCodes = {
+    "+27": 9,
+    "+1":  10,
+    "+44": 10,
+    "+91": 10,
+    "+61": 9,
+};
+
+// ─── Error Display Helpers ───────────────────────────────────────────────────
+function showError(spanId, message) {
+    const span = document.getElementById(spanId);
+    if (span) {
+        span.textContent = message;
+        span.classList.add("visible");
+    }
+}
+
+function clearError(spanId) {
+    const span = document.getElementById(spanId);
+    if (span) {
+        span.textContent = "";
+        span.classList.remove("visible");
+    }
+}
+
+// ─── Validation Logic ────────────────────────────────────────────────────────
+function validatePassword(password, email, confirmPassword, passwordSpanId, confirmSpanId) {
+    let valid = true;
+
+    if (password.length === 0) {
+        clearError(passwordSpanId);
+    } else if (password.length <= 8) {
+        showError(passwordSpanId, "Password must be more than 8 characters.");
+        valid = false;
+    } else if (password === email && email.length > 0) {
+        showError(passwordSpanId, "Password must not be the same as your email.");
+        valid = false;
+    } else {
+        clearError(passwordSpanId);
+    }
+
+    if (confirmPassword.length === 0) {
+        clearError(confirmSpanId);
+    } else if (password !== confirmPassword) {
+        showError(confirmSpanId, "Passwords do not match.");
+        valid = false;
+    } else {
+        clearError(confirmSpanId);
+    }
+
+    return valid;
+}
+
+function validatePhone(phoneValue, areaCode, phoneSpanId) {
+    const requiredDigits = areaCodes[areaCode];
+    const digits = phoneValue.trim();
+
+    if (digits.length === 0) { clearError(phoneSpanId); return false; }
+    if (!/^\d+$/.test(digits)) {
+        showError(phoneSpanId, "Phone number must contain digits only.");
+        return false;
+    }
+    if (digits.length !== requiredDigits) {
+        showError(phoneSpanId, `Phone number for ${areaCode} must be exactly ${requiredDigits} digits.`);
+        return false;
+    }
+    clearError(phoneSpanId);
+    return true;
+}
+
+// ─── Real-Time Listeners: Applicant ──────────────────────────────────────────
+const applicantPassword        = document.getElementById("applicantPassword");
+const applicantConfirmPassword = document.getElementById("applicantConfirmPassword");
+const applicantEmail           = document.getElementById("applicantEmail");
+const applicantPhone           = document.getElementById("applicantPhone");
+const applicantAreaCode        = document.getElementById("applicantAreaCode");
+
+applicantPassword.addEventListener("input", () => {
+    validatePassword(applicantPassword.value, applicantEmail.value,
+        applicantConfirmPassword.value, "applicantPasswordError", "applicantConfirmPasswordError");
+});
+applicantConfirmPassword.addEventListener("input", () => {
+    validatePassword(applicantPassword.value, applicantEmail.value,
+        applicantConfirmPassword.value, "applicantPasswordError", "applicantConfirmPasswordError");
+});
+applicantEmail.addEventListener("input", () => {
+    if (applicantPassword.value.length > 0) {
+        validatePassword(applicantPassword.value, applicantEmail.value,
+            applicantConfirmPassword.value, "applicantPasswordError", "applicantConfirmPasswordError");
+    }
+});
+applicantPhone.addEventListener("input", () => {
+    validatePhone(applicantPhone.value, applicantAreaCode.value, "applicantPhoneError");
+});
+applicantAreaCode.addEventListener("change", () => {
+    if (applicantPhone.value.length > 0) {
+        validatePhone(applicantPhone.value, applicantAreaCode.value, "applicantPhoneError");
+    }
+});
+
+// ─── Real-Time Listeners: Provider ───────────────────────────────────────────
+const providerPassword        = document.getElementById("providerPassword");
+const providerConfirmPassword = document.getElementById("providerConfirmPassword");
+const providerEmail           = document.getElementById("providerEmail");
+const providerPhone           = document.getElementById("providerPhone");
+const providerAreaCode        = document.getElementById("providerAreaCode");
+
+providerPassword.addEventListener("input", () => {
+    validatePassword(providerPassword.value, providerEmail.value,
+        providerConfirmPassword.value, "providerPasswordError", "providerConfirmPasswordError");
+});
+providerConfirmPassword.addEventListener("input", () => {
+    validatePassword(providerPassword.value, providerEmail.value,
+        providerConfirmPassword.value, "providerPasswordError", "providerConfirmPasswordError");
+});
+providerEmail.addEventListener("input", () => {
+    if (providerPassword.value.length > 0) {
+        validatePassword(providerPassword.value, providerEmail.value,
+            providerConfirmPassword.value, "providerPasswordError", "providerConfirmPasswordError");
+    }
+});
+providerPhone.addEventListener("input", () => {
+    validatePhone(providerPhone.value, providerAreaCode.value, "providerPhoneError");
+});
+providerAreaCode.addEventListener("change", () => {
+    if (providerPhone.value.length > 0) {
+        validatePhone(providerPhone.value, providerAreaCode.value, "providerPhoneError");
+    }
+});
+
+// ─── Dropdown Toggle ─────────────────────────────────────────────────────────
 dropdown.addEventListener("change", () => {
     const selectedValue = dropdown.value;
     if (selectedValue === "Applicant") {
@@ -17,242 +152,138 @@ dropdown.addEventListener("change", () => {
     }
 });
 
+// ─── Signup Button Click ──────────────────────────────────────────────────────
+const signupBtn = document.getElementById("signup-btn");
 
-function setError(id, visible) {
-    const el = document.getElementById(id);
-    if (!el) return;
-    if (visible) {
-        el.classList.add("show");
-    } else {
-        el.classList.remove("show");
+signupBtn.addEventListener("click", async () => {
+
+    const role = document.getElementById("role").value;
+
+    const email = role === "Applicant"
+        ? document.getElementById("applicantEmail").value
+        : document.getElementById("providerEmail").value;
+
+    const password = role === "Applicant"
+        ? document.getElementById("applicantPassword").value
+        : document.getElementById("providerPassword").value;
+
+    const confirmPassword = role === "Applicant"
+        ? document.getElementById("applicantConfirmPassword").value
+        : document.getElementById("providerConfirmPassword").value;
+
+    // ── Validate before doing anything ───────────────────────────────────────
+    if (!email || !password) {
+        alert("Please fill in your email and password.");
+        return;
     }
-}
-
-
-function isEmpty(value) {
-    return !value || value.trim() === "";
-}
-
-
-function isValidEmail(value) {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-}
-
-
-function isValidPhone(value) {
-    return /^\d{10}$/.test(value);
-}
-
-
-function isValidPassword(value) {
-    return value.length >= 8;
-}
-
-
-function validateApplicant() {
-    let valid = true;
-
-    const firstName = document.getElementById("firstName").value;
-    const lastName = document.getElementById("lastName").value;
-    const email = document.getElementById("applicantEmail").value;
-    const username = document.getElementById("username").value;
-    const institution = document.getElementById("institution").value;
-    const city = document.getElementById("city").value;
-    const phone = document.getElementById("phoneNumber").value;
-    //const cv = document.getElementById("cv").value;
-    const password = document.getElementById("password").value;
-    const confirmPassword = document.getElementById("confirm-password").value;
-
-    
-    const fnameEmpty = isEmpty(firstName);
-    setError("errorFname", fnameEmpty);
-    if (fnameEmpty) valid = false;
-
-   
-    const lnameEmpty = isEmpty(lastName);
-    setError("errorLname", lnameEmpty);
-    if (lnameEmpty) valid = false;
-
-   
-    const emailInvalid = isEmpty(email) || !isValidEmail(email);
-    setError("errorEmail", emailInvalid);
-    if (emailInvalid) valid = false;
-
-    
-    const usernameEmpty = isEmpty(username);
-    setError("errorUsername", usernameEmpty);
-    if (usernameEmpty) valid = false;
-
-   
-    const instEmpty = isEmpty(institution);
-    setError("errorInst", instEmpty);
-    if (instEmpty) valid = false;
-
-
-    const cityEmpty = isEmpty(city);
-    setError("errorCity", cityEmpty);
-    if (cityEmpty) valid = false;
-
-   
-    const phoneInvalid = !isValidPhone(phone);
-    setError("errorPhone", phoneInvalid);
-    if (phoneInvalid) valid = false;
-
-    
-    /*const cvEmpty = isEmpty(cv);
-    setError("errorCv", cvEmpty);
-    if (cvEmpty) valid = false;*/
-
-   
-    const passWeak = !isValidPassword(password);
-    if (passWeak) {
-        document.getElementById("errorPass").textContent = "Password must be at least 8 characters";
-        setError("errorPass", true);
-        valid = false;
-    } else {
-        setError("errorPass", false);
+    if (password !== confirmPassword) {
+        alert("Passwords do not match.");
+        return;
+    }
+    if (password.length <= 8) {
+        alert("Password must be more than 8 characters.");
+        return;
     }
 
-    
-    const passMismatch = isEmpty(confirmPassword) || password !== confirmPassword;
-    if (passMismatch) {
-        document.getElementById("errorConfPass").textContent =
-            isEmpty(confirmPassword) ? "Please confirm your password" : "Passwords do not match";
-        setError("errorConfPass", true);
-        valid = false;
-    } else {
-        setError("errorConfPass", false);
+    // ── Check if coming from Google login (already authenticated) ────────────
+    let user = auth.currentUser;
+
+    // ── If NOT Google user, create Firebase Auth account first ───────────────
+    if (!user) {
+        try {
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            user = userCredential.user;
+            console.log("✅ Firebase Auth user created:", user.uid);
+        } catch (error) {
+            console.error("Firebase Auth Error:", error.code);
+            if (error.code === "auth/email-already-in-use") {
+                alert("An account with this email already exists.");
+            } else if (error.code === "auth/invalid-email") {
+                alert("Please enter a valid email address.");
+            } else if (error.code === "auth/weak-password") {
+                alert("Password is too weak. Use at least 9 characters.");
+            } else {
+                alert("Account creation failed: " + error.message);
+            }
+            return;
+        }
     }
 
-    return valid;
-}
+    // ── Get REAL uid from Firebase — NOT hardcoded ────────────────────────────
+    const uid   = user.uid; // ✅ unique per user e.g. "abc123xyz"
+    const token = await user.getIdToken();
+    localStorage.setItem("token", token);
 
+    console.log("✅ Signing up with real Firebase UID:", uid);
 
-function validateProvider() {
-    let valid = true;
-
-    const username = document.getElementById("orgusername").value;
-    const org = document.getElementById("org").value;
-    const city = document.getElementById("orgcity").value;
-    const email = document.getElementById("email").value;
-    const phone = document.getElementById("orgphoneNumber").value;
-    const password = document.getElementById("provider-password").value;
-    const confirmPassword = document.getElementById("provider-confirm-password").value;
-
-   
-    const usernameEmpty = isEmpty(username);
-    setError("errorPUName", usernameEmpty);
-    if (usernameEmpty) valid = false;
-
-    
-    const orgEmpty = isEmpty(org);
-    setError("errorOrg", orgEmpty);
-    if (orgEmpty) valid = false;
-
-    
-    const cityEmpty = isEmpty(city);
-    setError("errorPCity", cityEmpty);
-    if (cityEmpty) valid = false;
-
-    
-    const emailInvalid = isEmpty(email) || !isValidEmail(email);
-    setError("errorPEmail", emailInvalid);
-    if (emailInvalid) valid = false;
-
-   
-    const phoneInvalid = !isValidPhone(phone);
-    setError("errorPNumber", phoneInvalid);
-    if (phoneInvalid) valid = false;
-
-  
-    const passWeak = !isValidPassword(password);
-    if (passWeak) {
-        document.getElementById("errorPPass").textContent = "Password must be at least 8 characters";
-        setError("errorPPass", true);
-        valid = false;
-    } else {
-        setError("errorPPass", false);
-    }
-
-   
-    const passMismatch = isEmpty(confirmPassword) || password !== confirmPassword;
-    if (passMismatch) {
-        document.getElementById("errorPConfPass").textContent =
-            isEmpty(confirmPassword) ? "Please confirm your password" : "Passwords do not match";
-        setError("errorPConfPass", true);
-        valid = false;
-    } else {
-        setError("errorPConfPass", false);
-    }
-
-    return valid;
-}
-
-
-const signUpBtn = document.getElementById("signup-btn");
-signUpBtn.addEventListener("click", async (e) => {
-    e.preventDefault();
-    //const file = document.getElementById("cv").files[0];
-
-    const role = dropdown.value;
-    let isValid = false;
+    // ── Build payload ─────────────────────────────────────────────────────────
+    let endpoint = "";
+    let payload  = {};
 
     if (role === "Applicant") {
-        isValid = validateApplicant();
+        endpoint = "/signup/applicant";
+        payload  = {
+            uid,         // ✅ real UID — creates unique Firestore document
+            firstname:   document.getElementById("firstName").value,
+            lastname:    document.getElementById("lastName").value,
+            email,
+            username:    document.getElementById("username").value,
+            institution: document.getElementById("institution").value,
+            city:        document.getElementById("city").value,
+            phonenumber: document.getElementById("applicantAreaCode").value +
+                         document.getElementById("applicantPhone").value,
+            cv:          ""
+        };
     } else if (role === "Provider") {
-        isValid = validateProvider();
+        endpoint = "/signup/provider";
+        payload  = {
+            uid,         // ✅ real UID — creates unique Firestore document
+            organization: document.getElementById("org").value,
+            email,
+            city:         document.getElementById("orgCity").value,
+            phonenumber:  document.getElementById("providerAreaCode").value +
+                          document.getElementById("providerPhone").value,
+            username:     document.getElementById("orgUsername").value
+        };
     }
 
-    if (!isValid) return;
-
+    // ── POST to backend ───────────────────────────────────────────────────────
     try {
-        const email = role === "Applicant"
-        ? document.getElementById("applicantEmail").value
-        : document.getElementById("email").value;
+        const response = await fetch(endpoint, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+        });
 
-        const password = role === "Applicant"
-        ? document.getElementById("password").value
-        : document.getElementById("provider-password").value;
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const uid = userCredential.user.uid;
-        if (role === "Applicant") {
-            const formData = new FormData();
-            formData.append("uid",uid);
-            //formData.append("cv", file);
-            formData.append("firstname", document.getElementById("firstName").value);
-            formData.append("lastname", document.getElementById("lastName").value)
-            formData.append("email", document.getElementById("applicantEmail").value);
-            formData.append("username", document.getElementById("username").value);
-            formData.append("institution", document.getElementById("institution").value);
-            formData.append("city",document.getElementById("city").value);
-            formData.append("phonenumber", document.getElementById("phoneNumber").value);
-           
-            
-            const res = await fetch("http://127.0.0.1:3000/signup/applicant", {
-                method: "POST",
-                body: formData
-            });
-            console.log("Applicant signup complete", await res.text());
-            document.getElementById("signup-form").reset();
-        } else if (role === "Provider") {
-            const res = await fetch("http://127.0.0.1:3000/signup/provider", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    uid: uid,
-                    organization: document.getElementById("org").value,
-                    email: document.getElementById("email").value,
-                    city: document.getElementById("orgcity").value,
-                    phonenumber: document.getElementById("orgphoneNumber").value,
-                    username: document.getElementById("orgusername").value,
-                    role
-                })
-            });
-            console.log("Provider signup complete", await res.text());
-            document.getElementById("signup-form").reset();
+        const data = await response.json();
+
+        if (response.ok) {
+            console.log("✅ Firestore document created for UID:", uid);
+            document.getElementById("successConfirm").classList.remove("hidden");
+
+            // Force token refresh to get new role claim from backend
+            await user.getIdToken(true);
+            const idTokenResult = await user.getIdTokenResult();
+            const userRole = idTokenResult.claims.role;
+
+            console.log("✅ Role assigned:", userRole);
+
+            setTimeout(() => {
+                if (userRole === "applicant")     window.location.href = "/applicant-home";
+                else if (userRole === "provider") window.location.href = "/provider-home";
+                else if (userRole === "admin")    window.location.href = "/admin-dashboard";
+                else alert("Role not assigned. Please contact support.");
+            }, 1500);
+
+        } else {
+            alert("Signup failed: " + data.error);
         }
 
-    } catch (err) {
-        console.error("Signup failed:", err);
+    } catch (error) {
+        console.error("Signup POST error:", error);
+        alert("Could not reach server. Is your backend running?");
     }
 });

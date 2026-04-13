@@ -1,61 +1,62 @@
 const express = require('express');
-const path = require('path'); 
+const path = require('path');
 const cors = require("cors");
-const multer = require("multer"); // Moved up from the merge
-const { db, admin } = require("./firebaseAdmin");
-const { authorize } = require('./access-logic');
 
 const app = express();
-const upload = multer({ dest: "uploads/" }); // Setup multer
 
-// Middleware 
 app.use(cors());
 app.use(express.json());
 
-// The Middleware "Guard"
+// Serve frontend static files
+app.use(express.static(path.join(__dirname, '..', 'frontend')));
+
+const { verifyToken } = require("./auth");
+const { db, admin } = require("./firebaseAdmin");
+const { authorize } = require('./access-logic');
+
+// ─── Guard Middleware ────────────────────────────────────────────────────────
 function guard(route) {
     return (req, res, next) => {
-        // req.user is usually set after a login process
-        const user = req.user; 
-
+        const user = req.user;
         if (user && authorize(user, route)) {
-            next(); // Access granted
+            next();
         } else {
             res.status(403).send("Forbidden: You do not have access to this route.");
         }
     };
 }
 
-// --- PROTECTED ROUTES ---
-app.get('/applicant-home', guard('/applicant-home'), (req, res) => {
+// Serve signup page
+app.get(['/signup', '/signup.html'], (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'frontend', 'signup.html'));
+});
+
+// Serve login page at root
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'frontend', 'index.html'));
+});
+// ─── Protected Routes ────────────────────────────────────────────────────────
+// ✅ Just serve the pages — token is verified client-side
+app.get('/applicant-home', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'applicant-home.html'));
 });
 
-app.get('/admin-dashboard', guard('/admin-dashboard'), (req, res) => {
+app.get('/admin-dashboard', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'admin-dashboard.html'));
 });
 
-app.get('/provider-home', guard('/provider-home'), (req, res) => {
+app.get('/provider-home', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'provider-home.html'));
 });
 
-// --- SIGNUP ROUTES ---
+// ─── Applicant Signup ────────────────────────────────────────────────────────
+app.post("/signup/applicant", async (req, res) => {
+    const { uid, firstname, lastname, email, username, institution, city, phonenumber, cv } = req.body;
 
-app.post("/signup/applicant", upload.single("cv"), async (req, res) => {
-    const {
-        uid,
-        firstname,
-        lastname,
-        email,
-        username,
-        institution,
-        city,
-        phonenumber,
-        role
-    } = req.body;
+    if (!email) return res.status(400).json({ error: "Email is required" });
 
     try {
-        console.log("Creating user...");
+        await admin.auth().setCustomUserClaims(uid, { role: "applicant" });
 
         await db.collection("users").doc(uid).set({
             firstname,
@@ -65,49 +66,26 @@ app.post("/signup/applicant", upload.single("cv"), async (req, res) => {
             institution,
             city,
             phonenumber,
-            role: "Applicant",
-            createdAt: new Date().toISOString(),
-            cvUrl: null 
+            cv,
+            role: "applicant",
+            createdAt: new Date().toISOString()
         });
 
-        console.log("User created in Firestore");
-
-        if (req.file) {
-            try {
-                const bucket = admin.storage().bucket();
-
-                await bucket.upload(req.file.path, {
-                    destination: `cvs/${req.file.originalname}`
-                });
-
-                const file = bucket.file(`cvs/${req.file.originalname}`);
-
-                const [url] = await file.getSignedUrl({
-                    action: "read",
-                    expires: "03-01-2030"
-                });
-
-                await db.collection("users").doc(uid).update({
-                    cvUrl: url
-                });
-
-                console.log("CV uploaded");
-
-            } catch (cvError) {
-                console.error("CV upload failed (non-blocking):", cvError);
-            }
-        }
-
-        res.status(201).send({ message: "User created successfully" });
+        res.status(201).json({ message: "Applicant created successfully" });
 
     } catch (error) {
-        console.error("Signup failed:", error);
-        res.status(500).send({ error: "Signup failed" });
+        console.error("Signup Error:", error.message);
+        res.status(500).json({ error: "Failed to create applicant" });
     }
 });
 
+// ─── Provider Signup ─────────────────────────────────────────────────────────
 app.post("/signup/provider", async (req, res) => {
-    const { uid, organization, email, city, phonenumber, username, role } = req.body;
+    console.log("📥 Received signup request:", req.body);
+    const { uid, organization, email, city, phonenumber, username } = req.body;
+
+    if (!email) return res.status(400).json({ error: "Email is required" });
+
     try {
         await admin.auth().setCustomUserClaims(uid, { role: "provider" });
 
@@ -117,18 +95,23 @@ app.post("/signup/provider", async (req, res) => {
             city,
             phonenumber,
             username,
-            role: "Provider",
+            role: "provider",
             createdAt: new Date().toISOString()
         });
-        
-        console.log(`Provider created: ${email}`);
-        res.status(201).send({ message: "Provider role assigned and saved!" });
-    }
-    catch(error) {
+
+        res.status(201).json({ message: "Provider created successfully" });
+
+    } catch (error) {
         console.error("Signup Error:", error.message);
-        res.status(500).send({ error: "Failed to assign role" });
+        res.status(500).json({ error: "Failed to create provider" });
     }
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// ✅ Export for testing
+module.exports = app;
+
+// ✅ Only run server outside tests
+if (process.env.NODE_ENV !== "test") {
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+}
