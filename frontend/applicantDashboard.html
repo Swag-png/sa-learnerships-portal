@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Applicant Dashboard - SkillsConnect</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .dashboard-wrapper {
+            min-height: 100vh;
+            background-color: #666666;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* NAVBAR */
+        .navbar {
+            background-color: #444444;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid white;
+        }
+
+        .navbar h1 {
+            color: white;
+            font-size: 20px;
+            margin: 0;
+        }
+
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: white;
+            font-size: 14px;
+        }
+
+        .logout-btn {
+            background-color: crimson;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 0;
+        }
+
+        .logout-btn:hover {
+            opacity: 0.85;
+            background-color: crimson;
+            color: white;
+        }
+
+        /* MAIN CONTENT */
+        .dashboard-content {
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* WELCOME CARD */
+        .welcome-card {
+            background-color: #545454;
+            border: 2px solid white;
+            border-radius: 12px;
+            padding: 25px;
+            color: white;
+        }
+
+        .welcome-card h2 {
+            margin: 0 0 8px 0;
+            font-size: 24px;
+        }
+
+        .welcome-card p {
+            margin: 0;
+            color: #ccc;
+            font-size: 14px;
+        }
+
+        /* INFO CARDS ROW */
+        .cards-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .info-card {
+            background-color: #545454;
+            border: 2px solid white;
+            border-radius: 12px;
+            padding: 20px;
+            color: white;
+            text-align: center;
+        }
+
+        .info-card h3 {
+            margin: 0 0 8px 0;
+            font-size: 14px;
+            color: #ccc;
+            text-transform: uppercase;
+        }
+
+        .info-card p {
+            margin: 0;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        /* PROFILE SECTION */
+        .profile-section {
+            background-color: #545454;
+            border: 2px solid white;
+            border-radius: 12px;
+            padding: 25px;
+            color: white;
+        }
+
+        .profile-section h2 {
+            margin: 0 0 20px 0;
+            border-left: 5px solid white;
+            padding-left: 10px;
+        }
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .profile-field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .profile-field label {
+            font-size: 12px;
+            color: #ccc;
+            text-transform: uppercase;
+            margin: 0;
+        }
+
+        .profile-field p {
+            margin: 0;
+            font-size: 15px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-wrapper">
+
+        <!-- NAVBAR -->
+        <nav class="navbar">
+            <h1>SkillsConnect</h1>
+            <div class="navbar-right">
+                <span id="navName"></span>
+                <button class="logout-btn" id="logoutBtn">Logout</button>
+            </div>
+        </nav>
+
+        <!-- MAIN CONTENT -->
+        <div class="dashboard-content">
+
+            <!-- WELCOME -->
+            <div class="welcome-card">
+                <h2 id="welcomeMsg">Welcome 👋</h2>
+                <p>Applicant Dashboard</p>
+            </div>
+
+            <!-- INFO CARDS -->
+            <div class="cards-row">
+                <div class="info-card">
+                    <h3>Role</h3>
+                    <p id="cardRole">Applicant</p>
+                </div>
+                <div class="info-card">
+                    <h3>Username</h3>
+                    <p id="cardUsername">-</p>
+                </div>
+                <div class="info-card">
+                    <h3>City</h3>
+                    <p id="cardCity">-</p>
+                </div>
+            </div>
+
+            <!-- PROFILE -->
+            <div class="profile-section">
+                <h2>Your Profile</h2>
+                <div class="profile-grid">
+                    <div class="profile-field">
+                        <label>Full Name</label>
+                        <p id="profileName">-</p>
+                    </div>
+                    <div class="profile-field">
+                        <label>Email</label>
+                        <p id="profileEmail">-</p>
+                    </div>
+                    <div class="profile-field">
+                        <label>Username</label>
+                        <p id="profileUsername">-</p>
+                    </div>
+                    <div class="profile-field">
+                        <label>Phone Number</label>
+                        <p id="profilePhone">-</p>
+                    </div>
+                    <div class="profile-field">
+                        <label>City</label>
+                        <p id="profileCity">-</p>
+                    </div>
+                    <div class="profile-field">
+                        <label>Role</label>
+                        <p id="profileRole">-</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // ── PROTECT PAGE ────────────────────────────
+        const sessionToken = localStorage.getItem("sessionToken");
+        const email        = localStorage.getItem("userEmail");
+        const name         = localStorage.getItem("userName");
+        const role         = localStorage.getItem("userRole");
+        const username     = localStorage.getItem("userUsername") || "-";
+        const city         = localStorage.getItem("userCity")     || "-";
+        const phone        = localStorage.getItem("userPhone")    || "-";
+
+        if (!sessionToken) {
+            alert("You must log in first!");
+            window.location.href = "index.html";
+        }
+
+        // ── DISPLAY USER DATA ───────────────────────
+        const displayName = name || email || "Applicant";
+
+        document.getElementById("navName").innerText      = displayName;
+        document.getElementById("welcomeMsg").innerText   = "Welcome, " + displayName + " 👋";
+        document.getElementById("cardRole").innerText     = role     || "Applicant";
+        document.getElementById("cardUsername").innerText = username;
+        document.getElementById("cardCity").innerText     = city;
+        document.getElementById("profileName").innerText  = name     || "-";
+        document.getElementById("profileEmail").innerText = email    || "-";
+        document.getElementById("profileUsername").innerText = username;
+        document.getElementById("profilePhone").innerText = phone;
+        document.getElementById("profileCity").innerText  = city;
+        document.getElementById("profileRole").innerText  = role     || "Applicant";
+
+        // ── LOGOUT ──────────────────────────────────
+        document.getElementById("logoutBtn").addEventListener("click", async () => {
+            try {
+                await fetch("http://localhost:3000/logout", {
+                    method:  "POST",
+                    headers: { "Authorization": sessionToken }
+                });
+            } catch (error) {
+                console.error("Logout error:", error);
+            }
+            localStorage.clear();
+            window.location.href = "index.html";
+        });
+    </script>
+</body>
+</html>
