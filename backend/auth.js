@@ -18,13 +18,14 @@ async function verifyToken(req, res, next) {
             role: decodedToken.role  // custom claim set by setCustomUserClaims()
         };
 
+
         console.log("✅ Verified user:", req.user); // helpful for debugging
 
         next();
     } catch (error) {
         console.error("❌ Token verification failed:", error.message);
         res.status(401).json({ error: "Invalid token" });
-    }
-}
 
+}
+}
 module.exports = { verifyToken };
