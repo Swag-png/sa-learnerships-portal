@@ -1,54 +1,59 @@
 const express = require('express');
-const path = require('path'); // Required for res.sendFile
-const app = express();
+const path = require('path');
 const cors = require("cors");
+
+const app = express();
 
 app.use(cors());
 app.use(express.json());
 
+// Serve frontend static files
+app.use(express.static(path.join(__dirname, '..', 'frontend')));
+
+const { verifyToken } = require("./auth");
 const { db, admin } = require("./firebaseAdmin");
-//Importing "Authorize" function from access-logic
 const { authorize } = require('./access-logic');
 
-
-// The Middleware "Guard"
+// ─── Guard Middleware ────────────────────────────────────────────────────────
 function guard(route) {
     return (req, res, next) => {
-        // req.user is usually set after a login process
-        const user = req.user; 
-
+        const user = req.user;
         if (user && authorize(user, route)) {
-            next(); // Access granted: move to the actual page logic
+            next();
         } else {
-            // Access denied: send a 403 error or redirect to login
             res.status(403).send("Forbidden: You do not have access to this route.");
         }
     };
 }
 
-// Applying the restriction to applicant route
-app.get('/applicant-home', guard('/applicant-home'), (req, res) => {
+// Serve signup page
+app.get(['/signup', '/signup.html'], (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'frontend', 'signup.html'));
+});
+
+// Serve login page at root
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'frontend', 'index.html'));
+});
+// ─── Protected Routes ────────────────────────────────────────────────────────
+// ✅ Just serve the pages — token is verified client-side
+app.get('/applicant-home', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'applicant-home.html'));
 });
 
-// Applying the restriction to admin route
-app.get('/admin-dashboard', guard('/admin-dashboard'), (req, res) => {
+app.get('/admin-dashboard', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'admin-dashboard.html'));
 });
 
-// Applying the restriction to provider route
-app.get('/provider-home', guard('/provider-home'), (req, res) => {
+app.get('/provider-home', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'provider-home.html'));
 });
 
-
-// Applicant signup
+// ─── Applicant Signup ────────────────────────────────────────────────────────
 app.post("/signup/applicant", async (req, res) => {
     const { uid, firstname, lastname, email, username, institution, city, phonenumber, cv } = req.body;
 
-    if (!email) {
-        return res.status(400).json({ error: "Email is required" });
-    }
+    if (!email) return res.status(400).json({ error: "Email is required" });
 
     try {
         await admin.auth().setCustomUserClaims(uid, { role: "applicant" });
@@ -74,13 +79,12 @@ app.post("/signup/applicant", async (req, res) => {
     }
 });
 
-// Provider signup
+// ─── Provider Signup ─────────────────────────────────────────────────────────
 app.post("/signup/provider", async (req, res) => {
+    console.log("📥 Received signup request:", req.body);
     const { uid, organization, email, city, phonenumber, username } = req.body;
 
-    if (!email) {
-        return res.status(400).json({ error: "Email is required" });
-    }
+    if (!email) return res.status(400).json({ error: "Email is required" });
 
     try {
         await admin.auth().setCustomUserClaims(uid, { role: "provider" });
