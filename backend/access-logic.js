@@ -2,6 +2,7 @@
 const rolePermissions = {
     'applicant': '/applicant-home',
     'provider': '/provider-home',
+    'applicant': '/api/listings',
     'admin': '/admin-dashboard'
 };
 

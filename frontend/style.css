@@ -191,3 +191,35 @@ select{
   visibility: visible;
 }
 
+.form-like {
+    width: 100%;
+}
+
+.listings-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.listing-card {
+    background: #fff;
+    padding: 1rem;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+}
+
+.listing-card h3 {
+    margin: 0 0 0.5rem 0;
+}
+
+.price-tag {
+    font-weight: bold;
+    display: block;
+    margin-top: 0.5rem;
+}
+
+.provider-name{
+  font-style: normal;
+  font-size: large;
+}
