@@ -107,6 +107,25 @@ app.post("/signup/provider", async (req, res) => {
     }
 });
 
+app.get("/nqf-levels", async (req, res) => {
+    try {
+        const snapshot = await db.collection("NQFLevels")
+            .orderBy("level")
+            .get();
+
+        const levels = [];
+        snapshot.forEach(doc => {
+            levels.push(doc.data());
+        });
+
+        return res.status(200).json({ levels });
+
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+});
+
+
 // ✅ Export for testing
 module.exports = app;
 
