@@ -48,33 +48,38 @@
         }
 
         function renderListings(data) {
-            const container = document.getElementById('listings-grid');
-            
-            if (data.length === 0) {
-                container.innerHTML = "<p>No opportunities found.</p>";
-                return;
-            }
+        const container = document.getElementById('listings-grid');
+    
+    if (data.length === 0) {
+        container.innerHTML = "<p>No opportunities found.</p>";
+        return;
+    }
 
-            container.innerHTML = data.map(item => `
-                <article class="listing-card">
-                    <header>
-                        <cite class="provider-name">${item.provider}</cite>
-                        <h2>${item.title}</h2>
-                    </header>
-                    
-                    <p class="description">${item.description}</p>
-                    
-                    <aside class="meta-info">
-                        <address>Location: ${item.location}</address>
-                        <cmall>${item.type}</small>
-                    </aside>
+    container.innerHTML = data.map(item => `
+        <article class="listing listing-card" data-id="${item.id}">
+            <header>
+                <cite class="provider-name">${item.provider}</cite>
+                <h2>${item.title}</h2>
+            </header>
+            <p class="description">${item.description}</p>
+            <aside class="meta-info">
+                <address>Location: ${item.location}</address>
+                <small>${item.type}</small>
+            </aside>
+            <footer class="price-tag">
+                <strong>Stipend: <data value="${item.price}">R${item.price}</data></strong>
+            </footer>
+        </article>
+    `).join('');
 
-                    <footer class="price-tag">
-                        <strong>Stipend: <data value="${item.price}">R${item.price}</data></strong>
-                    </footer>
-                </article>
-            `).join('');
-        }
+    // Attach click listeners after cards are rendered
+    document.querySelectorAll(".listing").forEach(listing => {
+        listing.addEventListener("click", () => {
+            const listingID = listing.dataset.id;
+            window.location.href = `/listing-info?listingID=${listingID}`;
+        });
+    });
+}
 
         fetchListings();
     </script>

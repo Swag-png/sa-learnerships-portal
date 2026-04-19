@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listing | SkillsConnect</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        #listing-detail {
+            max-width: 700px;
+            margin: 40px auto;
+            padding: 0 24px;
+            color: white;
+            font-family: sans-serif;
+        }
+
+        #listing-detail .back-btn {
+            background: none;
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-bottom: 32px;
+            display: inline-block;
+        }
+
+        #listing-detail .back-btn:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        #listing-detail .provider {
+            font-size: 0.9rem;
+            opacity: 0.6;
+            margin-bottom: 4px;
+        }
+
+        #listing-detail h1 {
+            font-size: 2rem;
+            margin: 0 0 8px;
+        }
+
+        #listing-detail .meta {
+            display: flex;
+            gap: 16px;
+            margin: 16px 0 24px;
+            font-size: 0.9rem;
+            opacity: 0.7;
+            flex-wrap: wrap;
+        }
+
+        #listing-detail .meta span {
+            background: rgba(255,255,255,0.1);
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+
+        #listing-detail .stipend {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 24px;
+            color: #7dd3fc;
+        }
+
+        #listing-detail .section-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            opacity: 0.5;
+            margin-bottom: 8px;
+        }
+
+        #listing-detail .description {
+            line-height: 1.7;
+            opacity: 0.85;
+            margin-bottom: 40px;
+        }
+
+        #listing-detail #applyListing {
+            background: #7dd3fc;
+            color: #0a0a0a;
+            border: none;
+            padding: 14px 36px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        #listing-detail #applyListing:hover {
+            background: #38bdf8;
+        }
+
+        .loading-msg {
+            text-align: center;
+            opacity: 0.5;
+            margin-top: 80px;
+            font-family: sans-serif;
+            color: white;
+        }
+
+        .error-msg {
+            text-align: center;
+            color: #f87171;
+            margin-top: 80px;
+            font-family: sans-serif;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="listing-detail">
+        <p class="loading-msg">Loading listing...</p>
+    </div>
+
+    <script type="module">
+        import { auth } from "./firebase.js";
+
+        const container = document.getElementById("listing-detail");
+        const params = new URLSearchParams(window.location.search);
+        const listingID = params.get("listingID");
+
+        if (!listingID) {
+            container.innerHTML = `<p class="error-msg">No listing specified.</p>`;
+        } else {
+            loadListing();
+        }
+
+        async function loadListing() {
+            const token = localStorage.getItem("token");
+
+            try {
+                const response = await fetch("/api/listings", {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+
+                if (!response.ok) {
+                    container.innerHTML = `<p class="error-msg">Could not load listing. Please log in again.</p>`;
+                    return;
+                }
+
+                const listings = await response.json();
+                const listing = listings.find(l => l.id === listingID);
+
+                if (!listing) {
+                    container.innerHTML = `<p class="error-msg">Listing not found.</p>`;
+                    return;
+                }
+
+                renderListing(listing);
+
+            } catch (err) {
+                container.innerHTML = `<p class="error-msg">Error loading listing. Check your connection.</p>`;
+            }
+        }
+
+        function renderListing(listing) {
+            container.innerHTML = `
+                <button class="back-btn" onclick="window.history.back()">← Back</button>
+
+                <p class="provider">${listing.provider ?? "Unknown provider"}</p>
+                <h1>${listing.title}</h1>
+
+                <div class="meta">
+                    <span>📍 ${listing.location ?? "Location not specified"}</span>
+                    <span>🏷 ${listing.type ?? "Type not specified"}</span>
+                </div>
+
+                <p class="stipend">Stipend: R${listing.price ?? "N/A"}</p>
+
+                <p class="section-label">About this opportunity</p>
+                <p class="description">${listing.description ?? "No description available."}</p>
+
+                <button id="applyListing" style="visibility: hidden;">Apply Now</button>
+            `;
+
+            setupApplyButton(listingID);
+        }
+
+        function setupApplyButton(listingID) {
+            const applyBtn = document.getElementById("applyListing");
+            if (!applyBtn) return;
+
+            auth.onAuthStateChanged(async (user) => {
+                if (!user) {
+                    applyBtn.style.visibility = "visible";
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/applicant/hasApplied?applicantID=${user.uid}&listingID=${listingID}`);
+                    const data = await response.json();
+
+                    if (data.hasApplied) {
+                        applyBtn.remove();
+                    } else {
+                        applyBtn.style.visibility = "visible";
+                    }
+                } catch {
+                    applyBtn.style.visibility = "visible";
+                }
+            });
+
+            applyBtn.addEventListener("click", async () => {
+                if (!auth.currentUser) {
+                    alert("You must be logged in to apply.");
+                    return;
+                }
+                try {
+                    const uid = auth.currentUser.uid;
+                    const response = await fetch("/applicant/apply", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ applicantID: uid, listingID, status: "pending" })
+                    });
+                    const data = await response.json();
+                    if (response.ok) {
+                        alert("Application successful!");
+                        applyBtn.remove();
+                    } else {
+                        alert("Application failed: " + data.error);
+                    }
+                } catch (error) {
+                    alert("Could not reach server.");
+                }
+            });
+        }
+    </script>
+
+</body>
+</html>

@@ -29,7 +29,7 @@ loginBtn.addEventListener("click", async (e) => {
         console.log("Logged in as:", role);
 
         // Redirect based on role
-        if (role === "applicant")      window.location.href = "/applicant-home";
+        if (role === "applicant")      window.location.href = "/listings";
         else if (role === "provider")  window.location.href = "/provider-home";
         else if (role === "admin")     window.location.href = "/admin-dashboard";
         else {

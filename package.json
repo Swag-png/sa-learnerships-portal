@@ -8,7 +8,13 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "mocha tests/control-access.test.js"
+    "test": "mocha tests/control-access.test.js && jest tests/__tests__/apply-listing.test.js",
+    "test:coverage": "jest tests/__tests__/apply-listing.test.js --coverage"
+  },
+  "jest": {
+    "testMatch": [
+       "**/tests/__tests__/apply-listing.test.js"
+    ]
   },
   "repository": {
     "type": "git",
@@ -23,6 +29,7 @@
   },
   "homepage": "https://github.com/Swag-png/sa-learnerships-portal#readme",
   "devDependencies": {
+    "jest": "^30.3.0",
     "mocha": "^11.3.0"
   },
   "dependencies": {

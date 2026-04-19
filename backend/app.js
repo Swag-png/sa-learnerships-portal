@@ -29,15 +29,17 @@ app.get(['/signup', '/signup.html'], (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'signup.html'));
 });
 
+app.get('/listing-info', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'frontend', 'listing-info.html'));
+});
+
 // Serve login page at root
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'index.html'));
 });
 // ─── Protected Routes ────────────────────────────────────────────────────────
 // ✅ Just serve the pages — token is verified client-side
-app.get('/applicant-home', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'frontend', 'applicant-home.html'));
-});
+
 
 app.get('/admin-dashboard', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'admin-dashboard.html'));
@@ -143,16 +145,71 @@ app.get('/api/listings', verifyToken, async (req, res) => {
     }
 });
 
+
+
+app.get("/applicant/hasApplied", async (req, res) => {
+    const {applicantID, listingID} = req.query;
+    try {
+        const snapshot = await db.collection("applications")
+            .where("applicantID", "==", applicantID)
+            .where("listingID", "==", listingID)
+            .get();
+        res.json({ hasApplied: !snapshot.empty });
+    } catch (error) {
+        res.status(500).json({ error: "Failed to check application"})
+    }
+});
+
+//Appicant apply
+app.post("/applicant/apply", async(req,res) => {
+    const { applicantID, listingID, status} = req.body;
+
+    if(!applicantID || !listingID){
+        return res.status(400).json({ error: "applicationID and listing ID are required"});
+    }
+   
+    try {
+        const userDoc = await db.collection("users").doc(applicantID).get();
+        console.log("👤 User doc exists:", userDoc.exists); // ← add this
+        console.log("👤 Looking for UID:", applicantID);
+        if(!userDoc.exists){
+            return res.status(400).json({ error: "User not found"});
+        }
+
+         // ── Validate listing exists ───────────────────────────────────────
+        const listingDoc = await db.collection("Opportunities").doc(listingID).get();
+        if (!listingDoc.exists) {
+            return res.status(404).json({ error: "Listing not found" });
+        }
+
+          // ── Prevent duplicate applications ────────────────────────────────
+        const docId = `${applicantID}_${listingID}`;
+        const existingApp = await db.collection("applications").doc(docId).get();
+        if (existingApp.exists) {
+            return res.status(409).json({ error: "You have already applied to this listing" });
+        }
+         
+         await db.collection("applications").doc(docId).set({
+            applicantID,
+            listingID,
+            status,
+            createdAt: new Date().toISOString()
+        });
+        res.status(201).json({ message: "Application submitted" });
+    } catch (error) {
+        console.error("Apply error:", error);
+        res.status(500).json({ error: "Failed to submit application" });
+    }
+
+})
 // ✅ Export for testing
 module.exports = app;
 
 // ✅ Only run server outside tests
 if (process.env.NODE_ENV !== "test") {
     const PORT = process.env.PORT || 3000;
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+    app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+}); 
 }
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-});

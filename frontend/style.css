@@ -223,3 +223,16 @@ select{
   font-style: normal;
   font-size: large;
 }
+#listing-container{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.listing{
+  border: 1px solid black;
+  width: 500px;
+  height:70px;
+}
+
