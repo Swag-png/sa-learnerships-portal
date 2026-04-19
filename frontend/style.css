@@ -31,6 +31,7 @@ form{
 .forgot-password{
 
 }
+
   label{
     margin-top: 10px;
     text-transform: capitalize;
@@ -99,21 +100,22 @@ a{
 
 .login{
   width:200px;
-
-
 }
 
 #formContainer{
   display: flex;
   justify-content: center;
   align-items: center;
+  height: 100vh;
+  font: bold;
+  color: white;
 }
 
 #signup-form{
   display: flex;
   flex-direction: column;
   gap: 10px;
-  width: 800px;
+  width: 500px;
   border: 2px solid black;
   color: white;
 }
@@ -126,33 +128,36 @@ a{
   display: none !important;
 }
 
+#ApplicantSignUp,
+#ProviderSignUp {
+    display: flex;
+    flex-direction: row;
+    gap: 24px;
+    width: 100%;
+}
 .labelInputSet{
-  
   display: flex;
-  align-items: center;
-  gap: 1px;
+  flex-direction: column;
+  gap: 4px;
+  flex:1;
 }
 
 .labelInputSet label{
-  width: 160px;
-  text-align: center;
+  width: 200px;
+  text-align: left;
 }
 
-#ApplicantSignUp{
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap:5px
-}
+
 
 #signup-form input{
-  width: 80px;
+  width: 180px;
 }
 
-.leftFields, .rightFields{
+.leftFields, .rightFields {
   display: flex;
   flex-direction: column;
-  gap:25px;
+  gap: 12px;
+  flex: 1; /* both columns share space equally */
 }
 
 #signup-btn{
@@ -168,6 +173,8 @@ a{
     width: 100px;
 }
 
+
+
 select{
   width: 100px;
 }
@@ -179,60 +186,31 @@ select{
   gap:5px
 }
 
-.red {
-  color: red;
-  font-size: small;
-  visibility: hidden;
-  width: 160px;
-  text-align: center;
-}
-
-.red.show {
-  visibility: visible;
-}
-
-.form-like {
-    width: 100%;
-}
-
-.listings-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 1rem;
-    margin-top: 1rem;
-}
-
-.listing-card {
-    background: #fff;
-    padding: 1rem;
-    border-radius: 10px;
-    border: 1px solid #ddd;
-}
-
-.listing-card h3 {
-    margin: 0 0 0.5rem 0;
-}
-
-.price-tag {
-    font-weight: bold;
-    display: block;
-    margin-top: 0.5rem;
-}
-
-.provider-name{
-  font-style: normal;
-  font-size: large;
-}
-#listing-container{
+.phone-wrapper {
   display: flex;
-  flex-direction: column;
+  gap: 6px;
   align-items: center;
-  gap: 20px;
+  border: black;
+  border-radius: 2px;
 }
 
-.listing{
-  border: 1px solid black;
-  width: 500px;
-  height:70px;
+.phone-wrapper .area-code-select {
+  width: 80px;
+  flex-shrink: 0;
+}
+
+.phone-wrapper input {
+  flex: 1;
+}
+
+.error-msg {
+  display: none;
+  color: red;
+  font-size: 0.78rem;
+  margin-top: 3px;
+}
+
+.error-msg.visible {
+  display: block;
 }
 

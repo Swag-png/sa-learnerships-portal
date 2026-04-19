@@ -3,6 +3,7 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/f
 
 // Map each protected page to its allowed role
 const routeRoles = {
+
     "/applicant-home":  "applicant",
     "/provider-home":   "provider",
     "/admin-dashboard": "admin"

@@ -4,7 +4,7 @@ const request = require("supertest");
 let mockSet;
 let mockSetCustomClaims;
 
-jest.mock("../backend/firebaseAdmin", () => {
+jest.mock("../../backend/firebaseAdmin", () => {
     mockSet             = jest.fn().mockResolvedValue();
     mockSetCustomClaims = jest.fn().mockResolvedValue();
 
