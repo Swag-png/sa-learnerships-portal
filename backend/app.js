@@ -1,54 +1,64 @@
 const express = require('express');
-const path = require('path'); // Required for res.sendFile
-const app = express();
+const path = require('path');
 const cors = require("cors");
+const app = express();
+const { verifyToken } = require("./auth");
+const { db, admin } = require("./firebaseAdmin");
+const { authorize } = require('./access-logic');
 
 app.use(cors());
 app.use(express.json());
 
-const { db, admin } = require("./firebaseAdmin");
-//Importing "Authorize" function from access-logic
-const { authorize } = require('./access-logic');
+// Serve frontend static files
+app.use(express.static(path.join(__dirname, '..', 'frontend')));
 
-
-// The Middleware "Guard"
+// ─── Guard Middleware ────────────────────────────────────────────────────────
 function guard(route) {
     return (req, res, next) => {
-        // req.user is usually set after a login process
-        const user = req.user; 
-
+        const user = req.user;
         if (user && authorize(user, route)) {
-            next(); // Access granted: move to the actual page logic
+            next();
         } else {
-            // Access denied: send a 403 error or redirect to login
             res.status(403).send("Forbidden: You do not have access to this route.");
         }
     };
 }
 
-// Applying the restriction to applicant route
-app.get('/applicant-home', guard('/applicant-home'), (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'frontend', 'applicant-home.html'));
+// Serve signup page
+app.get(['/signup', '/signup.html'], (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'frontend', 'signup.html'));
 });
 
-// Applying the restriction to admin route
-app.get('/admin-dashboard', guard('/admin-dashboard'), (req, res) => {
+app.get('/listing-info', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'frontend', 'listing-info.html'));
+});
+
+// Serve login page at root
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'frontend', 'index.html'));
+});
+// ─── Protected Routes ────────────────────────────────────────────────────────
+// ✅ Just serve the pages — token is verified client-side
+
+
+app.get('/admin-dashboard', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'admin-dashboard.html'));
 });
 
-// Applying the restriction to provider route
-app.get('/provider-home', guard('/provider-home'), (req, res) => {
+app.get('/provider-home', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'provider-home.html'));
 });
 
+app.get('/listings', (req, res) => {
+    // Point this to where your HTML actually sits
+    res.sendFile(path.join(__dirname, '..', 'frontend', 'listings.html'));
+});
 
-// Applicant signup
+// ─── Applicant Signup ────────────────────────────────────────────────────────
 app.post("/signup/applicant", async (req, res) => {
     const { uid, firstname, lastname, email, username, institution, city, phonenumber, cv } = req.body;
 
-    if (!email) {
-        return res.status(400).json({ error: "Email is required" });
-    }
+    if (!email) return res.status(400).json({ error: "Email is required" });
 
     try {
         await admin.auth().setCustomUserClaims(uid, { role: "applicant" });
@@ -74,13 +84,12 @@ app.post("/signup/applicant", async (req, res) => {
     }
 });
 
-// Provider signup
+// ─── Provider Signup ─────────────────────────────────────────────────────────
 app.post("/signup/provider", async (req, res) => {
+    console.log("📥 Received signup request:", req.body);
     const { uid, organization, email, city, phonenumber, username } = req.body;
 
-    if (!email) {
-        return res.status(400).json({ error: "Email is required" });
-    }
+    if (!email) return res.status(400).json({ error: "Email is required" });
 
     try {
         await admin.auth().setCustomUserClaims(uid, { role: "provider" });
@@ -103,11 +112,104 @@ app.post("/signup/provider", async (req, res) => {
     }
 });
 
+// ─── Listings ─────────────────────────────────────────────────────────
+app.get('/api/listings', verifyToken, async (req, res) => {
+    const isAuthorized = authorize(req.user, '/api/listings');
+
+    if (!isAuthorized) {
+        return res.status(403).json({ error: "Unauthorized" });
+    }
+
+    try {
+        const snapshot = await db.collection('Opportunities').get();
+        const opportunities = [];
+        
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            opportunities.push({ 
+                id: doc.id, 
+                title: data.title,
+                description: data.description,
+                price: data.stipend, 
+                location: data.location,
+                provider: data.company, 
+                type: data.type
+            });
+        });
+
+        res.status(200).json(opportunities);
+        
+    } catch (error) {
+        console.error("Firestore Error:", error);
+        res.status(500).json({ error: "Database error" });
+    }
+});
+
+
+
+app.get("/applicant/hasApplied", async (req, res) => {
+    const {applicantID, listingID} = req.query;
+    try {
+        const snapshot = await db.collection("applications")
+            .where("applicantID", "==", applicantID)
+            .where("listingID", "==", listingID)
+            .get();
+        res.json({ hasApplied: !snapshot.empty });
+    } catch (error) {
+        res.status(500).json({ error: "Failed to check application"})
+    }
+});
+
+//Appicant apply
+app.post("/applicant/apply", async(req,res) => {
+    const { applicantID, listingID, status} = req.body;
+
+    if(!applicantID || !listingID){
+        return res.status(400).json({ error: "applicationID and listing ID are required"});
+    }
+   
+    try {
+        const userDoc = await db.collection("users").doc(applicantID).get();
+        console.log("👤 User doc exists:", userDoc.exists); // ← add this
+        console.log("👤 Looking for UID:", applicantID);
+        if(!userDoc.exists){
+            return res.status(400).json({ error: "User not found"});
+        }
+
+         // ── Validate listing exists ───────────────────────────────────────
+        const listingDoc = await db.collection("Opportunities").doc(listingID).get();
+        if (!listingDoc.exists) {
+            return res.status(404).json({ error: "Listing not found" });
+        }
+
+          // ── Prevent duplicate applications ────────────────────────────────
+        const docId = `${applicantID}_${listingID}`;
+        const existingApp = await db.collection("applications").doc(docId).get();
+        if (existingApp.exists) {
+            return res.status(409).json({ error: "You have already applied to this listing" });
+        }
+         
+         await db.collection("applications").doc(docId).set({
+            applicantID,
+            listingID,
+            status,
+            createdAt: new Date().toISOString()
+        });
+        res.status(201).json({ message: "Application submitted" });
+    } catch (error) {
+        console.error("Apply error:", error);
+        res.status(500).json({ error: "Failed to submit application" });
+    }
+
+})
 // ✅ Export for testing
 module.exports = app;
 
 // ✅ Only run server outside tests
 if (process.env.NODE_ENV !== "test") {
     const PORT = process.env.PORT || 3000;
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+    app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+}); 
 }
+

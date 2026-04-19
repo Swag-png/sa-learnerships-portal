@@ -8,16 +8,15 @@
 </head>
 <body>
     <section id="formContainer">
-        <form id="signup-form" method="post">
+        <form id="signup-form">
             
             <img src="SkillsConnect Logo 2.PNG" class="Logo" />
             <h2 id="signup-heading" class="login-heading">Sign Up!</h2>
             <label id="successConfirm" class="hidden">Sign up successful!</label>
             <h4>Back to <a href="index.html">login</a></h4>
             
-
             <label for="role" class="login-heading">Role</label>
-            <select id="role" name="role" >
+            <select id="role" name="role">
                 <option value="Applicant">Applicant</option>
                 <option value="Provider">Provider</option>
             </select>
@@ -104,7 +103,6 @@
                     </section>
                 </section>
                 <section class="rightFields">
-                    
                     <section class="labelInputSet">
                         <label for="providerPhone">Telephone number</label>
                         <section class="phone-wrapper">
@@ -131,11 +129,13 @@
                 </section>
             </section>
 
-            <button type="button" >Sign up</button>
+            <button type="button" id="signup-btn" class="login">Sign up</button>
         </form>
     </section>
 
     <footer></footer>
-    <script src="script.js"></script>
+
+    <!-- ✅ This was missing — without it, script.js never loads -->
+    <script type="module" src="script.js"></script>
 </body>
 </html>

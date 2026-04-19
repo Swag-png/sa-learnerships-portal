@@ -8,7 +8,14 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "mocha tests/control-access.test.js"
+    "start": "node backend/app.js",
+    "test": "mocha tests/control-access.test.js && jest --testPathPattern=__tests__",
+    "test:mocha": "mocha tests/control-access.test.js",
+    "test:jest": "jest --testPathPattern=__tests__"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": ["**/__tests__/**/*.test.js"]
   },
   "repository": {
     "type": "git",
@@ -23,9 +30,13 @@
   },
   "homepage": "https://github.com/Swag-png/sa-learnerships-portal#readme",
   "devDependencies": {
-    "mocha": "^11.3.0"
+    "jest": "^29.0.0",
+    "mocha": "^11.3.0",
+    "supertest": "^6.3.0"
   },
   "dependencies": {
-    "express": "^5.2.1"
+    "cors": "^2.8.5",
+    "express": "^5.2.1",
+    "firebase-admin": "^13.8.0"
   }
 }
