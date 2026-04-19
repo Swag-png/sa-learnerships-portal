@@ -304,10 +304,6 @@
                     <label for="min-nqf">Required NQF Level <span class="required">*</span></label>
                     <select id="min-nqf">
                         <option value="">Select NQF Level</option>
-                        <option value="4">NQF Level 4 (Matric)</option>
-                        <option value="5">NQF Level 5 (Higher Certificate)</option>
-                        <option value="6">NQF Level 6 (Diploma)</option>
-                        <option value="7">NQF Level 7 (Bachelor's Degree)</option>
                     </select>
                 </div>
             </div>
@@ -368,6 +364,26 @@
     </div>
 
     <script>
+        // ── LOAD NQF LEVELS FROM BACKEND ────────────────
+async function loadNQFLevels() {
+    const response = await fetch("http://localhost:3000/nqf-levels");
+    const data     = await response.json();
+    const dropdown = document.getElementById("min-nqf");
+    dropdown.innerHTML = '<option value="">Select NQF Level</option>';
+    data.levels.forEach(nqf => {
+        const option   = document.createElement("option");
+        option.value   = nqf.level;
+        option.text    = `NQF ${nqf.level} - ${nqf.name} (${nqf.example})`;
+        dropdown.appendChild(option);
+    });
+}
+
+window.onload = () => {
+    loadNQFLevels();
+};
+
+
+
         function selectType(type) {
             document.querySelectorAll('.type-card').forEach(c => c.classList.remove('active'));
             document.querySelector(`[data-type="${type}"]`).classList.add('active');
