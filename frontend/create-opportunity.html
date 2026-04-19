@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Opportunity - SA Learnerships Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Work+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a3a52;
+            --primary-light: #2d5270;
+            --accent: #d4a574;
+            --accent-dark: #b8895e;
+            --surface: #fafaf8;
+            --surface-elevated: #ffffff;
+            --text-primary: #1e1e1e;
+            --text-secondary: #5a5a5a;
+            --text-muted: #8a8a8a;
+            --border: #e5e5e0;
+            --border-focus: #d4a574;
+            --success: #2d6a4f;
+            --shadow-sm: 0 1px 3px rgba(26, 58, 82, 0.04), 0 1px 2px rgba(26, 58, 82, 0.02);
+            --shadow-md: 0 4px 6px rgba(26, 58, 82, 0.07), 0 2px 4px rgba(26, 58, 82, 0.03);
+            --shadow-lg: 0 10px 24px rgba(26, 58, 82, 0.1), 0 4px 8px rgba(26, 58, 82, 0.04);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Work Sans', -apple-system, sans-serif;
+            background: linear-gradient(135deg, #fafaf8 0%, #f0f0ed 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 920px;
+            margin: 0 auto;
+            animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        header { margin-bottom: 3rem; text-align: center; }
+
+        h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 3.5rem;
+            font-weight: 600;
+            color: var(--primary);
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+            line-height: 1.1;
+        }
+
+        .subtitle {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            font-weight: 300;
+            letter-spacing: 0.01em;
+        }
+
+        .card {
+            background: var(--surface-elevated);
+            border-radius: 12px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .hidden { display: none; }
+
+        .section-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--accent);
+            display: inline-block;
+        }
+
+        .type-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 3rem;
+        }
+
+        .type-card {
+            background: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            padding: 1.75rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .type-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 4px;
+            background: linear-gradient(90deg, var(--accent), var(--accent-dark));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .type-card.active {
+            border-color: var(--accent);
+            background: linear-gradient(135deg, #fff 0%, #fdfcfa 100%);
+            box-shadow: var(--shadow-md);
+        }
+
+        .type-card.active::before { transform: scaleX(1); }
+
+        .type-icon { font-size: 2.25rem; margin-bottom: 0.75rem; display: block; }
+        .type-name { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 600; color: var(--primary); }
+        .type-description { font-size: 0.875rem; color: var(--text-secondary); line-height: 1.5; }
+
+        .form-group { margin-bottom: 1.75rem; }
+
+        label {
+            display: block;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        label .required { color: var(--accent-dark); margin-left: 2px; }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            font-family: 'Work Sans', sans-serif;
+            font-size: 0.95rem;
+            background: var(--surface-elevated);
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgba(212, 165, 116, 0.1);
+        }
+
+        .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+
+        .skills-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-top: 0.75rem;
+        }
+
+        .skill-chip {
+            padding: 0.5rem 1rem;
+            border: 1.5px solid var(--border);
+            border-radius: 20px;
+            background: var(--surface);
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            user-select: none;
+        }
+
+        .skill-chip:hover { border-color: var(--accent); transform: translateY(-2px); }
+        .skill-chip.selected {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+            border-color: var(--accent-dark);
+            color: white;
+        }
+
+        .actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+        }
+
+        button {
+            padding: 0.875rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: background 0.2s;
+        }
+
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-light); }
+        
+        .btn-secondary { background: var(--surface); border: 1.5px solid var(--border); }
+
+        .helper-text {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 0.4rem;
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Create Opportunity</h1>
+            <p class="subtitle">Post SETA-accredited learnerships and skills development opportunities</p>
+        </header>
+
+        <div class="card">
+            <div class="section-title">Select Opportunity Type</div>
+            <div class="type-selector">
+                <div class="type-card active" data-type="learnership" onclick="selectType('learnership')">
+                    <span class="type-icon">🎓</span>
+                    <div class="type-name">Learnership</div>
+                    <p class="type-description">Theory and workplace experience combination</p>
+                </div>
+                <div class="type-card" data-type="apprenticeship" onclick="selectType('apprenticeship')">
+                    <span class="type-icon">🛠️</span>
+                    <div class="type-name">Apprenticeship</div>
+                    <p class="type-description">Trade-focused vocational training</p>
+                </div>
+                <div class="type-card" data-type="internship" onclick="selectType('internship')">
+                    <span class="type-icon">💼</span>
+                    <div class="type-name">Internship</div>
+                    <p class="type-description">Work experience for graduates</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" id="accreditation-section">
+            <div class="section-title">Program Accreditation</div>
+            <p class="helper-text" style="margin-bottom: 1.5rem;">Registration details required for accredited programs.</p>
+            <div class="grid-2">
+                <div class="form-group">
+                    <label for="seta-number">SETA Registration Number <span class="required">*</span></label>
+                    <input type="text" id="seta-number" placeholder="e.g., 17/SETA21/010122">
+                </div>
+                <div class="form-group">
+                    <label for="saqa-id">SAQA Qualification ID <span class="required">*</span></label>
+                    <input type="number" id="saqa-id" placeholder="e.g., 12345">
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="section-title">Opportunity Details</div>
+            
+            <div class="form-group">
+                <label for="title">Opportunity Title <span class="required">*</span></label>
+                <input type="text" id="title" placeholder="e.g., Software Engineering Learnership">
+            </div>
+
+            <div class="form-group">
+                <label for="company">Company/Organization <span class="required">*</span></label>
+                <input type="text" id="company" placeholder="e.g., Tech Solutions">
+            </div>
+
+            <div class="form-group">
+                <label for="description">Detailed Description <span class="required">*</span></label>
+                <textarea id="description" placeholder="Include learning outcomes and duties..." rows="4"></textarea>
+            </div>
+
+            <div class="grid-2">
+                <div class="form-group">
+                    <label for="location">Location <span class="required">*</span></label>
+                    <input type="text" id="location" placeholder="e.g., Johannesburg">
+                </div>
+                <div class="form-group">
+                    <label for="duration">Duration (Months) <span class="required">*</span></label>
+                    <input type="number" id="duration" min="1" max="24" placeholder="e.g., 12" oninput="limitDuration(this)">
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>Target Age Bracket <span class="required">*</span></label>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <input type="number" id="min-age" min="0" placeholder="Min" oninput="validateAge(this)">
+                        <span>to</span>
+                        <input type="number" id="max-age" min="0" placeholder="Max" oninput="validateAge(this)">
+                    </div>
+                    <p class="helper-text">Enter integers only (e.g., 18 to 35).</p>
+                </div>
+                <div class="form-group">
+                    <label for="min-nqf">Required NQF Level <span class="required">*</span></label>
+                    <select id="min-nqf">
+                        <option value="">Select NQF Level</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="form-group">
+                    <label for="closing-date">Closing Date <span class="required">*</span></label>
+                    <input type="date" id="closing-date">
+                </div>
+                <div class="form-group">
+                    <label for="stipend">Monthly Stipend (ZAR)</label>
+                    <input type="number" id="stipend" min="0" placeholder="e.g., 5000" oninput="limitStipend(this)">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Required Skills & Licenses</label>
+                <div class="skills-grid" id="skills-grid">
+                    <div class="skill-chip" onclick="toggleSkill(this)">Communication</div>
+                    <div class="skill-chip" onclick="toggleSkill(this)">Problem Solving</div>
+                    <div class="skill-chip" onclick="toggleSkill(this)">Technical Writing</div>
+                    <div class="skill-chip" onclick="toggleSkill(this)">Physically Fit</div>
+                    <div class="skill-chip" onclick="toggleSkill(this)">Manual Labor Experience</div>
+                    <div class="skill-chip" onclick="toggleSkill(this)">Java Development</div>
+                    <div class="skill-chip" onclick="toggleSkill(this)">C++ Development</div>
+                    <div class="skill-chip" onclick="toggleSkill(this)">Web Technologies</div>
+                    <div class="skill-chip" onclick="toggleSkill(this)">Driver's Licence (Code 8)</div>
+                    <div class="skill-chip" onclick="toggleSkill(this)">Driver's Licence (Code 10)</div>
+                    <div class="skill-chip" onclick="toggleSkill(this)">Driver's Licence (Code 14)</div>
+                    <div class="skill-chip" onclick="toggleSkill(this)">PdP (Professional Driving Permit)</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="section-title">Matric Education Requirements</div>
+            <p class="helper-text" style="margin-bottom: 1.5rem;">Specify minimum marks required for key subjects (Max 5).</p>
+            <div id="subject-rows">
+                <div class="grid-2 form-group">
+                    <select class="subject-name" onchange="checkDuplicateSubjects()">
+                        <option value="">Select Subject</option>
+                        <option value="mathematics">Mathematics</option>
+                        <option value="physical-sciences">Physical Sciences</option>
+                        <option value="english-hl">English Home Language</option>
+                        <option value="it">Information Technology</option>
+                        <option value="accounting">Accounting</option>
+                        <option value="biology">Biology</option>
+                    </select>
+                    <input type="number" min="0" max="100" placeholder="Min Mark %" class="subject-mark" oninput="limitMark(this)">
+                </div>
+            </div>
+            <button type="button" class="btn-secondary" id="add-subject-btn" style="padding: 0.5rem 1rem; font-size: 0.85rem;" onclick="addSubjectRow()">+ Add Subject</button>
+        </div>
+
+        <div class="actions">
+            <button class="btn-primary" onclick="submitForReview()">Submit for Review</button>
+        </div>
+    </div>
+
+    <script>
+        // ── LOAD NQF LEVELS FROM BACKEND ────────────────
+async function loadNQFLevels() {
+    const response = await fetch("http://localhost:3000/nqf-levels");
+    const data     = await response.json();
+    const dropdown = document.getElementById("min-nqf");
+    dropdown.innerHTML = '<option value="">Select NQF Level</option>';
+    data.levels.forEach(nqf => {
+        const option   = document.createElement("option");
+        option.value   = nqf.level;
+        option.text    = `NQF ${nqf.level} - ${nqf.name} (${nqf.example})`;
+        dropdown.appendChild(option);
+    });
+}
+
+window.onload = () => {
+    loadNQFLevels();
+};
+
+
+
+        function selectType(type) {
+            document.querySelectorAll('.type-card').forEach(c => c.classList.remove('active'));
+            document.querySelector(`[data-type="${type}"]`).classList.add('active');
+            const accreditationCard = document.getElementById('accreditation-section');
+            if (type === 'learnership' || type === 'apprenticeship') {
+                accreditationCard.classList.remove('hidden');
+            } else { accreditationCard.classList.add('hidden'); }
+        }
+
+        function toggleSkill(chip) { chip.classList.toggle('selected'); }
+
+        function validateAge(input) {
+            input.value = Math.floor(input.value);
+            if (input.value < 0 && input.value !== "") { input.value = 0; }
+            const minAge = document.getElementById('min-age');
+            const maxAge = document.getElementById('max-age');
+            if (minAge.value && maxAge.value && parseInt(maxAge.value) < parseInt(minAge.value)) {
+                if (input.id === 'max-age') maxAge.value = minAge.value;
+            }
+        }
+
+        function limitStipend(input) {
+            if (input.value < 0 && input.value !== "") { input.value = 0; }
+        }
+
+        function limitMark(input) {
+            if (input.value > 100) input.value = 100;
+            if (input.value < 0 && input.value !== "") input.value = 0;
+        }
+
+        function limitDuration(input) {
+            if (input.value > 24) input.value = 24;
+            if (input.value < 1 && input.value !== "") input.value = 1;
+        }
+
+        function checkDuplicateSubjects() {
+            const selects = document.querySelectorAll('.subject-name');
+            const selectedValues = [];
+            
+            selects.forEach(select => {
+                if (select.value !== "") {
+                    if (selectedValues.includes(select.value)) {
+                        alert("You have already selected " + select.options[select.selectedIndex].text + ". Please choose a different subject.");
+                        select.value = ""; 
+                    } else {
+                        selectedValues.push(select.value);
+                    }
+                }
+            });
+        }
+
+        function addSubjectRow() {
+            const container = document.getElementById('subject-rows');
+            const rowCount = container.getElementsByClassName('form-group').length;
+
+            if (rowCount >= 5) {
+                alert("You can only add a maximum of 5 education requirements.");
+                return;
+            }
+
+            const newRow = document.createElement('div');
+            newRow.className = 'grid-2 form-group';
+            newRow.style.marginTop = "1rem";
+            newRow.innerHTML = `
+                <select class="subject-name" onchange="checkDuplicateSubjects()">
+                    <option value="">Select Subject</option>
+                    <option value="mathematics">Mathematics</option>
+                    <option value="physical-sciences">Physical Sciences</option>
+                    <option value="english-hl">English Home Language</option>
+                    <option value="it">Information Technology</option>
+                    <option value="accounting">Accounting</option>
+                    <option value="biology">Biology</option>
+                </select>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <input type="number" min="0" max="100" placeholder="Min Mark %" class="subject-mark" oninput="limitMark(this)">
+                    <button type="button" onclick="this.parentElement.parentElement.remove()" style="background:none; border:none; color:#ff4d4d; cursor:pointer; font-size:1.5rem;">&times;</button>
+                </div>`;
+            container.appendChild(newRow);
+        }
+
+        function submitForReview() { 
+            // Logic to collect all data and send to your /api/opportunities/submit route
+            alert("Opportunity submitted for review."); 
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Available Opportunities | SkillsConnect</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <main id="formContainer">
+        <section class="form-like">
+
+            <header>
+                <img src="SkillsConnect Logo 2.PNG" alt="SkillsConnect Logo" class="Logo" />
+                <h1 class="login-heading">Available Opportunities</h1>
+                <nav>
+                    <button class="login" onclick="window.history.back()">← Back</button>
+                </nav>
+            </header>
+
+            <section id="listings-grid" class="listings-grid">
+                <p>Loading opportunities...</p>
+            </section>
+
+        </section>
+    </main>
+
+    <script>
+        async function fetchListings() {
+            const token = localStorage.getItem('token');
+            const container = document.getElementById('listings-grid');
+
+            try {
+                const response = await fetch('/api/listings', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const listings = await response.json();
+                    renderListings(listings);
+                } else {
+                    container.innerHTML = `<p class="error-msg">Access Denied: Please log in again.</p>`;
+                }
+            } catch (err) {
+                container.innerHTML = `<p class="error-msg">Error loading data. Check your connection.</p>`;
+            }
+        }
+
+        function renderListings(data) {
+        const container = document.getElementById('listings-grid');
+    
+    if (data.length === 0) {
+        container.innerHTML = "<p>No opportunities found.</p>";
+        return;
+    }
+
+    container.innerHTML = data.map(item => `
+        <article class="listing listing-card" data-id="${item.id}">
+            <header>
+                <cite class="provider-name">${item.provider}</cite>
+                <h2>${item.title}</h2>
+            </header>
+            <p class="description">${item.description}</p>
+            <aside class="meta-info">
+                <address>Location: ${item.location}</address>
+                <small>${item.type}</small>
+            </aside>
+            <footer class="price-tag">
+                <strong>Stipend: <data value="${item.price}">R${item.price}</data></strong>
+            </footer>
+        </article>
+    `).join('');
+
+    // Attach click listeners after cards are rendered
+    document.querySelectorAll(".listing").forEach(listing => {
+        listing.addEventListener("click", () => {
+            const listingID = listing.dataset.id;
+            window.location.href = `/listing-info?listingID=${listingID}`;
+        });
+    });
+}
+
+        fetchListings();
+    </script>
+
+</body>
+</html>

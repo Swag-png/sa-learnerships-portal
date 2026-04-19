@@ -34,7 +34,7 @@ describe('Access Control Tests', () => {
         const result = authorize(user, route);
         assert.strictEqual(result, false); 
     })
-
+    
     it('authorize_provider_accessToAdminDenied', () => {
         const user = { role: 'provider' };
         const route = '/admin-dashboard';
