@@ -107,6 +107,34 @@ app.post("/signup/provider", async (req, res) => {
     }
 });
 
+
+// ─── Opportunity Routes ──────────────────────────────────────────────────────
+
+// Submit Opportunity
+app.post("/api/opportunities/submit", async (req, res) => {
+    try {
+        const opportunityData = req.body;
+
+        // Set mandatory metadata
+        opportunityData.status = "pending-review";
+        opportunityData.createdAt = new Date().toISOString();
+        opportunityData.updatedAt = new Date().toISOString();
+
+        // Save directly to the "opportunities" collection in Firestore
+        const docRef = await db.collection("opportunities").add(opportunityData);
+
+        res.status(201).json({ 
+            message: "Opportunity submitted successfully",
+            id: docRef.id
+        });
+
+    } catch (error) {
+        console.error("Error submitting opportunity:", error);
+        res.status(500).json({ error: "Failed to submit opportunity" });
+    }
+});
+
+
 // ✅ Export for testing
 module.exports = app;
 
