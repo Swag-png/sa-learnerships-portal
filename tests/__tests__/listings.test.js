@@ -9,24 +9,24 @@ let mockDocGet;
 let mockSet;
 
 jest.mock("../../backend/firebaseAdmin", () => {
-    mockGet           = jest.fn();
-    mockAdd           = jest.fn();
-    mockVerifyIdToken = jest.fn();
+    mockGet             = jest.fn();
+    mockAdd             = jest.fn();
+    mockVerifyIdToken   = jest.fn();
     mockSetCustomClaims = jest.fn().mockResolvedValue();
-    mockDocGet        = jest.fn();
-    mockSet           = jest.fn().mockResolvedValue();
+    mockDocGet          = jest.fn();
+    mockSet             = jest.fn().mockResolvedValue();
 
     return {
         admin: {
             auth: () => ({
-                verifyIdToken:      mockVerifyIdToken,
+                verifyIdToken:       mockVerifyIdToken,
                 setCustomUserClaims: mockSetCustomClaims
             })
         },
         db: {
             collection: (name) => ({
-                get:  mockGet,
-                add:  mockAdd,
+                get:   mockGet,
+                add:   mockAdd,
                 where: () => ({ get: mockGet }),
                 doc: () => ({
                     get:    mockDocGet,
@@ -40,21 +40,10 @@ jest.mock("../../backend/firebaseAdmin", () => {
 
 const app = require("../../backend/app");
 
-// ─── Helper: make a valid provider token ──────────────────────────────────────
-function providerToken() {
-    mockVerifyIdToken.mockResolvedValue({ uid: "provider-uid", role: "provider" });
-    return "Bearer valid-provider-token";
-}
-
-function applicantToken() {
-    mockVerifyIdToken.mockResolvedValue({ uid: "applicant-uid", role: "applicant" });
-    return "Bearer valid-applicant-token";
-}
-
 beforeEach(() => jest.clearAllMocks());
 
 // =============================================================================
-// User Story 1: Provider lists a new opportunity
+// User Story 1: Provider submits a new opportunity
 // =============================================================================
 describe("US-01: Provider submits a new opportunity", () => {
 
@@ -202,13 +191,13 @@ describe("US-05: Provider views applicants", () => {
     test("✅ Returns empty array when provider has no listings", async () => {
         mockVerifyIdToken.mockResolvedValue({ uid: "provider-uid", role: "provider" });
 
-        // providerDoc
+        // First doc get = provider profile
         mockDocGet.mockResolvedValueOnce({
             exists: true,
             data: () => ({ organization: "TechCorp" })
         });
 
-        // opportunities snapshot — empty
+        // where().get() = empty opportunities
         mockGet.mockResolvedValueOnce({ forEach: () => {} });
 
         const res = await request(app)

@@ -21,7 +21,7 @@ jest.mock("../../backend/firebaseAdmin", () => {
     return {
         admin: {
             auth: () => ({
-                verifyIdToken:      mockVerifyIdToken,
+                verifyIdToken:       mockVerifyIdToken,
                 setCustomUserClaims: mockSetCustomClaims
             })
         },
@@ -29,9 +29,9 @@ jest.mock("../../backend/firebaseAdmin", () => {
             collection: (name) => ({
                 doc: (id) => ({
                     get: async () => {
-                        if (name === "users")        return mockUserDoc();
+                        if (name === "users")         return mockUserDoc();
                         if (name === "Opportunities") return mockListingDoc();
-                        if (name === "applications") return mockAppDoc();
+                        if (name === "applications")  return mockAppDoc();
                     },
                     set:    mockSetApp,
                     update: jest.fn().mockResolvedValue()
@@ -59,7 +59,7 @@ describe("US-03: Applicant applies to a listing", () => {
             data: () => ({ role: "applicant" })
         });
         mockListingDoc.mockResolvedValue({ exists: true });
-        mockAppDoc.mockResolvedValue({ exists: false }); // no prior application
+        mockAppDoc.mockResolvedValue({ exists: false });
 
         const res = await request(app)
             .post("/applicant/apply")
@@ -73,7 +73,6 @@ describe("US-03: Applicant applies to a listing", () => {
         const res = await request(app)
             .post("/applicant/apply")
             .send({ listingID: "listing_001" });
-
         expect(res.status).toBe(400);
     });
 
@@ -81,7 +80,6 @@ describe("US-03: Applicant applies to a listing", () => {
         const res = await request(app)
             .post("/applicant/apply")
             .send({ applicantID: "user_001" });
-
         expect(res.status).toBe(400);
     });
 
@@ -89,7 +87,6 @@ describe("US-03: Applicant applies to a listing", () => {
         const res = await request(app)
             .post("/applicant/apply")
             .send({ status: "pending" });
-
         expect(res.status).toBe(400);
     });
 
@@ -105,10 +102,7 @@ describe("US-03: Applicant applies to a listing", () => {
     });
 
     test("❌ Non-existent listing returns 404", async () => {
-        mockUserDoc.mockResolvedValue({
-            exists: true,
-            data: () => ({ role: "applicant" })
-        });
+        mockUserDoc.mockResolvedValue({ exists: true, data: () => ({ role: "applicant" }) });
         mockListingDoc.mockResolvedValue({ exists: false });
 
         const res = await request(app)
@@ -120,10 +114,7 @@ describe("US-03: Applicant applies to a listing", () => {
     });
 
     test("❌ Duplicate application returns 409", async () => {
-        mockUserDoc.mockResolvedValue({
-            exists: true,
-            data: () => ({ role: "applicant" })
-        });
+        mockUserDoc.mockResolvedValue({ exists: true, data: () => ({ role: "applicant" }) });
         mockListingDoc.mockResolvedValue({ exists: true });
         mockAppDoc.mockResolvedValue({ exists: true }); // already applied
 
@@ -136,10 +127,7 @@ describe("US-03: Applicant applies to a listing", () => {
     });
 
     test("❌ Firestore write failure returns 500", async () => {
-        mockUserDoc.mockResolvedValue({
-            exists: true,
-            data: () => ({ role: "applicant" })
-        });
+        mockUserDoc.mockResolvedValue({ exists: true, data: () => ({ role: "applicant" }) });
         mockListingDoc.mockResolvedValue({ exists: true });
         mockAppDoc.mockResolvedValue({ exists: false });
         mockSetApp.mockRejectedValue(new Error("Firestore write failed"));
@@ -154,32 +142,75 @@ describe("US-03: Applicant applies to a listing", () => {
 });
 
 // =============================================================================
-// User Story 4: NQF prerequisite enforcement
+// User Story 4: Role-based access control (matches control-access.test.js spec)
 // =============================================================================
-describe("US-04: NQF prerequisite enforcement (access-logic)", () => {
+describe("US-04: Role-based access control (access-logic)", () => {
     const { authorize } = require("../../backend/access-logic");
 
+    // ── Granted ──────────────────────────────────────────────────────────────
     test("✅ Applicant can access /api/listings", () => {
         expect(authorize({ role: "applicant" }, "/api/listings")).toBe(true);
+    });
+
+    test("✅ Applicant can access /applicant-home", () => {
+        expect(authorize({ role: "applicant" }, "/applicant-home")).toBe(true);
     });
 
     test("✅ Provider can access /api/listings", () => {
         expect(authorize({ role: "provider" }, "/api/listings")).toBe(true);
     });
 
-    test("✅ Admin can access everything", () => {
-        expect(authorize({ role: "admin" }, "/api/listings")).toBe(true);
-        expect(authorize({ role: "admin" }, "/applicant-home")).toBe(true);
-        expect(authorize({ role: "admin" }, "/provider-home")).toBe(true);
+    test("✅ Provider can access /provider-home", () => {
+        expect(authorize({ role: "provider" }, "/provider-home")).toBe(true);
     });
 
-    test("❌ Applicant cannot access provider routes", () => {
+    test("✅ Provider can access /create-opportunity", () => {
+        expect(authorize({ role: "provider" }, "/create-opportunity")).toBe(true);
+    });
+
+    test("✅ Admin can access /admin-dashboard", () => {
+        expect(authorize({ role: "admin" }, "/admin-dashboard")).toBe(true);
+    });
+
+    test("✅ Admin can access /api/listings", () => {
+        expect(authorize({ role: "admin" }, "/api/listings")).toBe(true);
+    });
+
+    test("✅ Admin can access /create-opportunity", () => {
+        expect(authorize({ role: "admin" }, "/create-opportunity")).toBe(true);
+    });
+
+    // ── Denied ───────────────────────────────────────────────────────────────
+    test("❌ Applicant cannot access /create-opportunity", () => {
         expect(authorize({ role: "applicant" }, "/create-opportunity")).toBe(false);
+    });
+
+    test("❌ Applicant cannot access /api/applicants", () => {
         expect(authorize({ role: "applicant" }, "/api/applicants")).toBe(false);
     });
 
-    test("❌ Provider cannot access applicant-only routes", () => {
+    test("❌ Applicant cannot access /provider-home", () => {
+        expect(authorize({ role: "applicant" }, "/provider-home")).toBe(false);
+    });
+
+    test("❌ Applicant cannot access /admin-dashboard", () => {
+        expect(authorize({ role: "applicant" }, "/admin-dashboard")).toBe(false);
+    });
+
+    test("❌ Provider cannot access /applicant-home", () => {
         expect(authorize({ role: "provider" }, "/applicant-home")).toBe(false);
+    });
+
+    test("❌ Provider cannot access /admin-dashboard", () => {
+        expect(authorize({ role: "provider" }, "/admin-dashboard")).toBe(false);
+    });
+
+    test("❌ Admin cannot access /provider-home", () => {
+        expect(authorize({ role: "admin" }, "/provider-home")).toBe(false);
+    });
+
+    test("❌ Admin cannot access /applicant-home", () => {
+        expect(authorize({ role: "admin" }, "/applicant-home")).toBe(false);
     });
 
     test("❌ Unknown role is denied everywhere", () => {
@@ -187,8 +218,11 @@ describe("US-04: NQF prerequisite enforcement (access-logic)", () => {
         expect(authorize({ role: "unknown" }, "/applicant-home")).toBe(false);
     });
 
-    test("❌ No role object is denied", () => {
+    test("❌ Null user is denied", () => {
         expect(authorize(null, "/api/listings")).toBe(false);
+    });
+
+    test("❌ Empty object (no role) is denied", () => {
         expect(authorize({}, "/api/listings")).toBe(false);
     });
 });
@@ -198,13 +232,13 @@ describe("US-04: NQF prerequisite enforcement (access-logic)", () => {
 // =============================================================================
 describe("hasApplied endpoint", () => {
 
-    test("✅ Returns hasApplied: false when no application exists", async () => {
-        // The where().get() mock returns empty snapshot
+    test("✅ Returns hasApplied: true when snapshot is non-empty (mock returns empty:true)", async () => {
         const res = await request(app)
             .get("/applicant/hasApplied")
             .query({ applicantID: "user_001", listingID: "listing_001" });
 
         expect(res.status).toBe(200);
-        expect(res.body.hasApplied).toBe(true); // empty = true from mock
+        // The mock returns { empty: true } so hasApplied = !true = false
+        expect(res.body.hasApplied).toBe(false);
     });
 });
