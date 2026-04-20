@@ -115,8 +115,8 @@ app.post("/signup/provider", async (req, res) => {
 
 // ─── Opportunity Routes ──────────────────────────────────────────────────────
 
-// Submit Opportunity
-app.post("/api/opportunities/submit", async (req, res) => {
+// Submit Opportunity - ADDED verifyToken and guard for security
+app.post("/api/opportunities/submit", verifyToken, guard('/api/opportunities/submit'), async (req, res) => {
     try {
         const opportunityData = req.body;
 
@@ -124,9 +124,10 @@ app.post("/api/opportunities/submit", async (req, res) => {
         opportunityData.status = "pending-review";
         opportunityData.createdAt = new Date().toISOString();
         opportunityData.updatedAt = new Date().toISOString();
+        opportunityData.providerId = req.user.uid; // Track which provider created this
 
-        // Save directly to the "opportunities" collection in Firestore
-        const docRef = await db.collection("opportunities").add(opportunityData);
+        // Unified naming: "Opportunities" with uppercase 'O'
+        const docRef = await db.collection("Opportunities").add(opportunityData);
 
         res.status(201).json({ 
             message: "Opportunity submitted successfully",
@@ -139,8 +140,7 @@ app.post("/api/opportunities/submit", async (req, res) => {
     }
 });
 
-
-// ─── Listings ─────────────────────────────────────────────────────────
+// Listings - Standardized to "Opportunities"
 app.get('/api/listings', verifyToken, async (req, res) => {
     const isAuthorized = authorize(req.user, '/api/listings');
 
@@ -149,6 +149,7 @@ app.get('/api/listings', verifyToken, async (req, res) => {
     }
 
     try {
+        // Unified naming: "Opportunities"
         const snapshot = await db.collection('Opportunities').get();
         const opportunities = [];
         
@@ -172,8 +173,6 @@ app.get('/api/listings', verifyToken, async (req, res) => {
         res.status(500).json({ error: "Database error" });
     }
 });
-
-
 
 app.get("/applicant/hasApplied", async (req, res) => {
     const {applicantID, listingID} = req.query;
