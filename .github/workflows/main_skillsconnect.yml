@@ -18,16 +18,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Node.js version
+      - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20.x' # ✅ 20 LTS is more stable than 24 on Azure
+          node-version: '20.x'
 
       - name: Install dependencies
         run: npm install
 
-      - name: Run Jest tests only (skip Mocha for CI)
-        run: npx jest --testPathPattern=__tests__ --passWithNoTests
+      # ── Mocha tests ───────────────────────────────────────────────────────────
+      - name: Run Mocha access control tests
+        run: npx mocha tests/control-access.test.js --timeout 10000
+        env:
+          NODE_ENV: test
+
+      # ── Jest tests with 50% coverage requirement ──────────────────────────────
+      - name: Run Jest tests with coverage
+        run: npx jest --testPathPattern="tests/__tests__" --coverage --coverageThreshold='{"global":{"lines":50}}' --passWithNoTests --forceExit
         env:
           NODE_ENV: test
 
@@ -39,8 +46,8 @@ jobs:
           exclude: |
             node_modules/
             .git/
+            coverage/
             tests/
-            __tests__/
 
   deploy:
     runs-on: ubuntu-latest
@@ -58,7 +65,7 @@ jobs:
       - name: Install production dependencies
         run: npm install --omit=dev
 
-      - name: 'Deploy to Azure Web App'
+      - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:

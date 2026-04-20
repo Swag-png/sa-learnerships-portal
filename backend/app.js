@@ -145,7 +145,7 @@ app.post("/signup/provider", async (req, res) => {
 // ─── Opportunity Routes ──────────────────────────────────────────────────────
 
 // Submit Opportunity
-app.post("/api/opportunities/submit", async (req, res) => {
+app.post("/api/opportunities/submit", verifyToken, guard('/api/opportunities/submit'), async (req, res) => {
     try {
         const opportunityData = req.body;
 
@@ -154,8 +154,8 @@ app.post("/api/opportunities/submit", async (req, res) => {
         opportunityData.createdAt = new Date().toISOString();
         opportunityData.updatedAt = new Date().toISOString();
 
-        // Save directly to the "opportunities" collection in Firestore
-        const docRef = await db.collection("opportunities").add(opportunityData);
+        // Save directly to the "Opportunities" collection in Firestore
+        const docRef = await db.collection("Opportunities").add(opportunityData);
 
         res.status(201).json({ 
             message: "Opportunity submitted successfully",

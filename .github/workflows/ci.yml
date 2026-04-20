@@ -17,20 +17,26 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20' # Updated to a more recent version
+          node-version: '20'
 
-      # --- YOUR PARTNERS' FRONTEND CODE ---
-      - name: Install Frontend dependencies
-        run: |
-          cd frontend
-          npm install
+      - name: Install root dependencies
+        run: npm install
 
-      - name: Run Frontend tests
-        run: |
-          cd frontend
-          npm test || echo "Frontend tests failed but continuing..."
+      # ── Mocha: Access Control Tests ──────────────────────────────────────────
+      - name: Run Mocha access control tests
+        run: npx mocha tests/control-access.test.js --timeout 10000
+        env:
+          NODE_ENV: test
 
-      # --- YOUR BACKEND ACCESS CONTROL CODE ---
-      - name: Run Backend Access Logic Tests
-        run: |
-          npx mocha tests/control-access.test.js
+      # ── Jest: All other tests with coverage ──────────────────────────────────
+      - name: Run Jest tests with coverage
+        run: npx jest --testPathPattern="tests/__tests__" --coverage --coverageThreshold='{"global":{"lines":50}}' --passWithNoTests --forceExit
+        env:
+          NODE_ENV: test
+
+      # ── Upload coverage report as artifact ───────────────────────────────────
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: coverage/

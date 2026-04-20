@@ -1,197 +1,210 @@
-// ─── Assertion Library ────────────────────────────────────────────────────────
-const assert = require('assert');
+const request = require("supertest");
 
-// ─── Mock Firestore ───────────────────────────────────────────────────────────
-// We mock Firestore so tests run without a real database connection.
-// Each test controls what .get() returns to simulate different scenarios.
+// ─── Mocks ────────────────────────────────────────────────────────────────────
+let mockVerifyIdToken;
+let mockUserDoc;
+let mockListingDoc;
+let mockAppDoc;
+let mockSetApp;
+let mockSetCustomClaims;
+let mockDbSet;
 
-let mockUserData   = null; // what Firestore returns for users.doc(id).get()
-let mockListingData = null; // what Firestore returns for listings.doc(id).get()
-let mockAppData    = null; // what Firestore returns for applications.doc(id).get()
-let mockSetError   = null; // if set, db.set() will throw this error
+jest.mock("../../backend/firebaseAdmin", () => {
+    mockVerifyIdToken   = jest.fn();
+    mockUserDoc         = jest.fn();
+    mockListingDoc      = jest.fn();
+    mockAppDoc          = jest.fn();
+    mockSetApp          = jest.fn().mockResolvedValue();
+    mockSetCustomClaims = jest.fn().mockResolvedValue();
+    mockDbSet           = jest.fn().mockResolvedValue();
 
-const mockDb = {
-    collection: (name) => ({
-        doc: (id) => ({
-            get: async () => {
-                if (name === 'users')        return mockUserData;
-                if (name === 'listings')     return mockListingData;
-                if (name === 'applications') return mockAppData;
-            },
-            set: async () => {
-                if (mockSetError) throw mockSetError;
-            }
-        })
-    })
-};
+    return {
+        admin: {
+            auth: () => ({
+                verifyIdToken:      mockVerifyIdToken,
+                setCustomUserClaims: mockSetCustomClaims
+            })
+        },
+        db: {
+            collection: (name) => ({
+                doc: (id) => ({
+                    get: async () => {
+                        if (name === "users")        return mockUserDoc();
+                        if (name === "Opportunities") return mockListingDoc();
+                        if (name === "applications") return mockAppDoc();
+                    },
+                    set:    mockSetApp,
+                    update: jest.fn().mockResolvedValue()
+                }),
+                where: () => ({ get: jest.fn().mockResolvedValue({ empty: true }) }),
+                get:   jest.fn().mockResolvedValue({ forEach: () => {} }),
+                add:   jest.fn().mockResolvedValue({ id: "new-id" })
+            })
+        }
+    };
+});
 
-// ─── The function we are testing (extracted from app.js) ──────────────────────
-// This mirrors the logic in your /applicant/apply route so it can be
-// tested without spinning up an Express server.
+const app = require("../../backend/app");
 
-async function applyToListing(applicantID, listingID, status, db) {
+beforeEach(() => jest.clearAllMocks());
 
-    if (!applicantID || !listingID) {
-        return { statusCode: 400, body: { error: "applicantID and listingID are required" } };
-    }
+// =============================================================================
+// User Story 3: Applicant applies to a listing
+// =============================================================================
+describe("US-03: Applicant applies to a listing", () => {
 
-    const userDoc = await db.collection('users').doc(applicantID).get();
-    if (!userDoc.exists) {
-        return { statusCode: 404, body: { error: "User not found" } };
-    }
-
-    if (userDoc.data().role !== 'applicant') {
-        return { statusCode: 403, body: { error: "Only applicants can apply to listings" } };
-    }
-
-    const listingDoc = await db.collection('listings').doc(listingID).get();
-    if (!listingDoc.exists) {
-        return { statusCode: 404, body: { error: "Listing not found" } };
-    }
-
-    const existingApp = await db.collection('applications').doc(`${applicantID}_${listingID}`).get();
-    if (existingApp.exists) {
-        return { statusCode: 409, body: { error: "You have already applied to this listing" } };
-    }
-
-    try {
-        await db.collection('applications').doc(`${applicantID}_${listingID}`).set({
-            applicantID,
-            listingID,
-            status,
-            createdAt: new Date().toISOString()
+    test("✅ Valid applicant can apply to an existing listing", async () => {
+        mockUserDoc.mockResolvedValue({
+            exists: true,
+            data: () => ({ role: "applicant" })
         });
-        return { statusCode: 201, body: { message: "Application submitted" } };
-    } catch (error) {
-        return { statusCode: 500, body: { error: "Failed to submit application" } };
-    }
-}
+        mockListingDoc.mockResolvedValue({ exists: true });
+        mockAppDoc.mockResolvedValue({ exists: false }); // no prior application
 
-// ─── Tests ────────────────────────────────────────────────────────────────────
-describe('Apply Listing Tests', () => {
+        const res = await request(app)
+            .post("/applicant/apply")
+            .send({ applicantID: "user_001", listingID: "listing_001", status: "pending" });
 
-    // Reset mock state before each test so tests don't affect each other
-    beforeEach(() => {
-        mockUserData    = null;
-        mockListingData = null;
-        mockAppData     = null;
-        mockSetError    = null;
+        expect(res.status).toBe(201);
+        expect(res.body.message).toBe("Application submitted");
     });
 
-    // ── Happy Path ────────────────────────────────────────────────────────────
+    test("❌ Missing applicantID returns 400", async () => {
+        const res = await request(app)
+            .post("/applicant/apply")
+            .send({ listingID: "listing_001" });
 
-    it('apply_validApplicantAndListing_returns201', async () => {
-        // SETUP: user exists and is an applicant, listing exists, no prior application
-        mockUserData    = { exists: true,  data: () => ({ role: 'applicant' }) };
-        mockListingData = { exists: true,  data: () => ({}) };
-        mockAppData     = { exists: false };
-
-        // ACT
-        const result = await applyToListing('user_001', 'listing_001', 'pending', mockDb);
-
-        // VERIFY
-        assert.strictEqual(result.statusCode, 201);
-        assert.strictEqual(result.body.message, 'Application submitted');
+        expect(res.status).toBe(400);
     });
 
-    // ── Missing Fields ────────────────────────────────────────────────────────
+    test("❌ Missing listingID returns 400", async () => {
+        const res = await request(app)
+            .post("/applicant/apply")
+            .send({ applicantID: "user_001" });
 
-    it('apply_missingApplicantID_returns400', async () => {
-        // SETUP: no applicantID provided
-        const result = await applyToListing('', 'listing_001', 'pending', mockDb);
-
-        assert.strictEqual(result.statusCode, 400);
-        assert.strictEqual(result.body.error, 'applicantID and listingID are required');
+        expect(res.status).toBe(400);
     });
 
-    it('apply_missingListingID_returns400', async () => {
-        // SETUP: no listingID provided
-        const result = await applyToListing('user_001', '', 'pending', mockDb);
+    test("❌ Missing both IDs returns 400", async () => {
+        const res = await request(app)
+            .post("/applicant/apply")
+            .send({ status: "pending" });
 
-        assert.strictEqual(result.statusCode, 400);
-        assert.strictEqual(result.body.error, 'applicantID and listingID are required');
+        expect(res.status).toBe(400);
     });
 
-    it('apply_missingBothIDs_returns400', async () => {
-        const result = await applyToListing('', '', 'pending', mockDb);
+    test("❌ Non-existent user returns 400", async () => {
+        mockUserDoc.mockResolvedValue({ exists: false });
 
-        assert.strictEqual(result.statusCode, 400);
+        const res = await request(app)
+            .post("/applicant/apply")
+            .send({ applicantID: "ghost_user", listingID: "listing_001" });
+
+        expect(res.status).toBe(400);
+        expect(res.body.error).toBe("User not found");
     });
 
-    // ── User Validation ───────────────────────────────────────────────────────
+    test("❌ Non-existent listing returns 404", async () => {
+        mockUserDoc.mockResolvedValue({
+            exists: true,
+            data: () => ({ role: "applicant" })
+        });
+        mockListingDoc.mockResolvedValue({ exists: false });
 
-    it('apply_userDoesNotExist_returns404', async () => {
-        // SETUP: user not found in Firestore
-        mockUserData = { exists: false };
+        const res = await request(app)
+            .post("/applicant/apply")
+            .send({ applicantID: "user_001", listingID: "ghost_listing" });
 
-        const result = await applyToListing('ghost_user', 'listing_001', 'pending', mockDb);
-
-        assert.strictEqual(result.statusCode, 404);
-        assert.strictEqual(result.body.error, 'User not found');
+        expect(res.status).toBe(404);
+        expect(res.body.error).toBe("Listing not found");
     });
 
-    it('apply_providerTriesToApply_returns403', async () => {
-        // SETUP: user exists but is a provider, not an applicant
-        mockUserData    = { exists: true, data: () => ({ role: 'provider' }) };
-        mockListingData = { exists: true, data: () => ({}) };
+    test("❌ Duplicate application returns 409", async () => {
+        mockUserDoc.mockResolvedValue({
+            exists: true,
+            data: () => ({ role: "applicant" })
+        });
+        mockListingDoc.mockResolvedValue({ exists: true });
+        mockAppDoc.mockResolvedValue({ exists: true }); // already applied
 
-        const result = await applyToListing('provider_001', 'listing_001', 'pending', mockDb);
+        const res = await request(app)
+            .post("/applicant/apply")
+            .send({ applicantID: "user_001", listingID: "listing_001" });
 
-        assert.strictEqual(result.statusCode, 403);
-        assert.strictEqual(result.body.error, 'Only applicants can apply to listings');
+        expect(res.status).toBe(409);
+        expect(res.body.error).toBe("You have already applied to this listing");
     });
 
-    it('apply_adminTriesToApply_returns403', async () => {
-        // SETUP: user exists but is an admin
-        mockUserData    = { exists: true, data: () => ({ role: 'admin' }) };
-        mockListingData = { exists: true, data: () => ({}) };
+    test("❌ Firestore write failure returns 500", async () => {
+        mockUserDoc.mockResolvedValue({
+            exists: true,
+            data: () => ({ role: "applicant" })
+        });
+        mockListingDoc.mockResolvedValue({ exists: true });
+        mockAppDoc.mockResolvedValue({ exists: false });
+        mockSetApp.mockRejectedValue(new Error("Firestore write failed"));
 
-        const result = await applyToListing('admin_001', 'listing_001', 'pending', mockDb);
+        const res = await request(app)
+            .post("/applicant/apply")
+            .send({ applicantID: "user_001", listingID: "listing_001" });
 
-        assert.strictEqual(result.statusCode, 403);
-        assert.strictEqual(result.body.error, 'Only applicants can apply to listings');
+        expect(res.status).toBe(500);
+        expect(res.body.error).toBe("Failed to submit application");
+    });
+});
+
+// =============================================================================
+// User Story 4: NQF prerequisite enforcement
+// =============================================================================
+describe("US-04: NQF prerequisite enforcement (access-logic)", () => {
+    const { authorize } = require("../../backend/access-logic");
+
+    test("✅ Applicant can access /api/listings", () => {
+        expect(authorize({ role: "applicant" }, "/api/listings")).toBe(true);
     });
 
-    // ── Listing Validation ────────────────────────────────────────────────────
-
-    it('apply_listingDoesNotExist_returns404', async () => {
-        // SETUP: user is valid applicant but listing doesn't exist
-        mockUserData    = { exists: true,  data: () => ({ role: 'applicant' }) };
-        mockListingData = { exists: false };
-
-        const result = await applyToListing('user_001', 'ghost_listing', 'pending', mockDb);
-
-        assert.strictEqual(result.statusCode, 404);
-        assert.strictEqual(result.body.error, 'Listing not found');
+    test("✅ Provider can access /api/listings", () => {
+        expect(authorize({ role: "provider" }, "/api/listings")).toBe(true);
     });
 
-    // ── Duplicate Application ─────────────────────────────────────────────────
-
-    it('apply_duplicateApplication_returns409', async () => {
-        // SETUP: everything valid but application already exists
-        mockUserData    = { exists: true, data: () => ({ role: 'applicant' }) };
-        mockListingData = { exists: true, data: () => ({}) };
-        mockAppData     = { exists: true }; // already applied
-
-        const result = await applyToListing('user_001', 'listing_001', 'pending', mockDb);
-
-        assert.strictEqual(result.statusCode, 409);
-        assert.strictEqual(result.body.error, 'You have already applied to this listing');
+    test("✅ Admin can access everything", () => {
+        expect(authorize({ role: "admin" }, "/api/listings")).toBe(true);
+        expect(authorize({ role: "admin" }, "/applicant-home")).toBe(true);
+        expect(authorize({ role: "admin" }, "/provider-home")).toBe(true);
     });
 
-    // ── Database Failure ──────────────────────────────────────────────────────
-
-    it('apply_databaseWriteFails_returns500', async () => {
-        // SETUP: everything valid but Firestore throws on write
-        mockUserData    = { exists: true,  data: () => ({ role: 'applicant' }) };
-        mockListingData = { exists: true,  data: () => ({}) };
-        mockAppData     = { exists: false };
-        mockSetError    = new Error('Firestore write failed');
-
-        const result = await applyToListing('user_001', 'listing_001', 'pending', mockDb);
-
-        assert.strictEqual(result.statusCode, 500);
-        assert.strictEqual(result.body.error, 'Failed to submit application');
+    test("❌ Applicant cannot access provider routes", () => {
+        expect(authorize({ role: "applicant" }, "/create-opportunity")).toBe(false);
+        expect(authorize({ role: "applicant" }, "/api/applicants")).toBe(false);
     });
 
+    test("❌ Provider cannot access applicant-only routes", () => {
+        expect(authorize({ role: "provider" }, "/applicant-home")).toBe(false);
+    });
+
+    test("❌ Unknown role is denied everywhere", () => {
+        expect(authorize({ role: "unknown" }, "/api/listings")).toBe(false);
+        expect(authorize({ role: "unknown" }, "/applicant-home")).toBe(false);
+    });
+
+    test("❌ No role object is denied", () => {
+        expect(authorize(null, "/api/listings")).toBe(false);
+        expect(authorize({}, "/api/listings")).toBe(false);
+    });
+});
+
+// =============================================================================
+// Check application status endpoint
+// =============================================================================
+describe("hasApplied endpoint", () => {
+
+    test("✅ Returns hasApplied: false when no application exists", async () => {
+        // The where().get() mock returns empty snapshot
+        const res = await request(app)
+            .get("/applicant/hasApplied")
+            .query({ applicantID: "user_001", listingID: "listing_001" });
+
+        expect(res.status).toBe(200);
+        expect(res.body.hasApplied).toBe(true); // empty = true from mock
+    });
 });

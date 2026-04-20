@@ -1,9 +1,25 @@
 // ─── Role → Allowed Routes ───────────────────────────────────────────────────
-// Each role maps to an array of routes it is permitted to access.
 const rolePermissions = {
-    'applicant': ['/api/listings', '/applicant-home'],
-    'provider':  ['/api/listings', '/provider-home', '/create-opportunity', '/api/applicants'],
-    'admin':     ['/api/listings', '/admin-dashboard', '/applicant-home', '/provider-home', '/create-opportunity', '/api/applicants']
+    'applicant': [
+        '/api/listings',
+        '/applicant-home'
+    ],
+    'provider': [
+        '/api/listings',
+        '/provider-home',
+        '/create-opportunity',
+        '/api/applicants',
+        '/api/opportunities/submit'   // ✅ allows provider to submit opportunities
+    ],
+    'admin': [
+        '/api/listings',
+        '/admin-dashboard',
+        '/applicant-home',
+        '/provider-home',
+        '/create-opportunity',
+        '/api/applicants',
+        '/api/opportunities/submit'   // ✅ admin can also submit
+    ]
 };
 
 /**
