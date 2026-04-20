@@ -3,471 +3,751 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Opportunity - SA Learnerships Portal</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Work+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <title>Post Opportunity | SkillsConnect</title>
+    <link rel="stylesheet" href="style.css">
     <style>
-        :root {
-            --primary: #1a3a52;
-            --primary-light: #2d5270;
-            --accent: #d4a574;
-            --accent-dark: #b8895e;
-            --surface: #fafaf8;
-            --surface-elevated: #ffffff;
-            --text-primary: #1e1e1e;
-            --text-secondary: #5a5a5a;
-            --text-muted: #8a8a8a;
-            --border: #e5e5e0;
-            --border-focus: #d4a574;
-            --success: #2d6a4f;
-            --shadow-sm: 0 1px 3px rgba(26, 58, 82, 0.04), 0 1px 2px rgba(26, 58, 82, 0.02);
-            --shadow-md: 0 4px 6px rgba(26, 58, 82, 0.07), 0 2px 4px rgba(26, 58, 82, 0.03);
-            --shadow-lg: 0 10px 24px rgba(26, 58, 82, 0.1), 0 4px 8px rgba(26, 58, 82, 0.04);
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: 'Work Sans', -apple-system, sans-serif;
-            background: linear-gradient(135deg, #fafaf8 0%, #f0f0ed 100%);
-            color: var(--text-primary);
-            line-height: 1.6;
+        /* ── PAGE SHELL ── */
+        .page-wrapper {
             min-height: 100vh;
-            padding: 2rem 1rem;
-        }
-
-        .container {
-            max-width: 920px;
-            margin: 0 auto;
-            animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        header { margin-bottom: 3rem; text-align: center; }
-
-        h1 {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 3.5rem;
-            font-weight: 600;
-            color: var(--primary);
-            letter-spacing: -0.02em;
-            margin-bottom: 0.5rem;
-            line-height: 1.1;
-        }
-
-        .subtitle {
-            font-size: 1.125rem;
-            color: var(--text-secondary);
-            font-weight: 300;
-            letter-spacing: 0.01em;
-        }
-
-        .card {
-            background: var(--surface-elevated);
-            border-radius: 12px;
-            padding: 2.5rem;
-            margin-bottom: 2rem;
-            box-shadow: var(--shadow-md);
-            border: 1px solid var(--border);
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .hidden { display: none; }
-
-        .section-title {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 1.75rem;
-            font-weight: 600;
-            color: var(--primary);
-            margin-bottom: 1.5rem;
-            padding-bottom: 0.75rem;
-            border-bottom: 2px solid var(--accent);
-            display: inline-block;
-        }
-
-        .type-selector {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 1.25rem;
-            margin-bottom: 3rem;
-        }
-
-        .type-card {
-            background: var(--surface);
-            border: 2px solid var(--border);
-            border-radius: 10px;
-            padding: 1.75rem;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .type-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 4px;
-            background: linear-gradient(90deg, var(--accent), var(--accent-dark));
-            transform: scaleX(0);
-            transform-origin: left;
-            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .type-card.active {
-            border-color: var(--accent);
-            background: linear-gradient(135deg, #fff 0%, #fdfcfa 100%);
-            box-shadow: var(--shadow-md);
-        }
-
-        .type-card.active::before { transform: scaleX(1); }
-
-        .type-icon { font-size: 2.25rem; margin-bottom: 0.75rem; display: block; }
-        .type-name { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 600; color: var(--primary); }
-        .type-description { font-size: 0.875rem; color: var(--text-secondary); line-height: 1.5; }
-
-        .form-group { margin-bottom: 1.75rem; }
-
-        label {
-            display: block;
-            font-weight: 500;
-            color: var(--text-primary);
-            margin-bottom: 0.5rem;
-            font-size: 0.95rem;
-        }
-
-        label .required { color: var(--accent-dark); margin-left: 2px; }
-
-        input, select, textarea {
-            width: 100%;
-            padding: 0.875rem 1rem;
-            border: 1.5px solid var(--border);
-            border-radius: 8px;
-            font-family: 'Work Sans', sans-serif;
-            font-size: 0.95rem;
-            background: var(--surface-elevated);
-        }
-
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: var(--border-focus);
-            box-shadow: 0 0 0 3px rgba(212, 165, 116, 0.1);
-        }
-
-        .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
-
-        .skills-grid {
+            background-color: #666666;
             display: flex;
-            flex-wrap: wrap;
-            gap: 0.75rem;
-            margin-top: 0.75rem;
+            flex-direction: column;
         }
 
-        .skill-chip {
-            padding: 0.5rem 1rem;
-            border: 1.5px solid var(--border);
-            border-radius: 20px;
-            background: var(--surface);
+        /* ── NAVBAR ── */
+        .navbar {
+            background-color: #444444;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid white;
+        }
+        .navbar h1 { color: white; font-size: 20px; margin: 0; }
+        .navbar-right { display: flex; align-items: center; gap: 15px; }
+
+        .nav-link-btn {
+            background-color: transparent;
+            color: white;
+            border: 2px solid white;
+            padding: 8px 16px;
+            border-radius: 8px;
             cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: var(--text-secondary);
-            user-select: none;
+            font-size: 14px;
+            margin-top: 0;
+            text-transform: uppercase;
+        }
+        .nav-link-btn:hover { background-color: white; color: #444; }
+
+        .logout-btn {
+            background-color: crimson;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 0;
+        }
+        .logout-btn:hover { opacity: 0.85; }
+
+        /* ── MAIN CONTENT ── */
+        .main-content {
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            max-width: 860px;
+            margin: 0 auto;
+            width: 100%;
         }
 
-        .skill-chip:hover { border-color: var(--accent); transform: translateY(-2px); }
-        .skill-chip.selected {
-            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
-            border-color: var(--accent-dark);
+        /* ── PAGE HEADER ── */
+        .page-header {
+            background-color: #545454;
+            border: 2px solid white;
+            border-radius: 12px;
+            padding: 25px;
+            color: white;
+        }
+        .page-header h2 { margin: 0 0 6px; font-size: 24px; }
+        .page-header p  { margin: 0; color: #ccc; font-size: 14px; }
+
+        /* ── CARDS ── */
+        .form-card {
+            background-color: #545454;
+            border: 2px solid white;
+            border-radius: 12px;
+            padding: 28px;
             color: white;
         }
 
-        .actions {
-            display: flex;
-            gap: 1rem;
-            justify-content: flex-end;
-            margin-top: 3rem;
-            padding-top: 2rem;
-            border-top: 1px solid var(--border);
+        .card-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 0 0 20px;
+            padding-left: 12px;
+            border-left: 5px solid white;
         }
 
-        button {
-            padding: 0.875rem 2rem;
-            border-radius: 8px;
-            font-weight: 600;
+        /* ── TYPE SELECTOR ── */
+        .type-selector {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .type-card {
+            background-color: #444;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 10px;
+            padding: 20px;
             cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            color: white;
+        }
+        .type-card:hover { border-color: white; background-color: #4a4a4a; }
+        .type-card.active {
+            border-color: white;
+            background-color: #3a3a3a;
+            box-shadow: 0 0 0 2px rgba(255,255,255,0.15);
+        }
+        .type-icon { font-size: 28px; display: block; margin-bottom: 8px; }
+        .type-name { font-size: 16px; font-weight: bold; margin-bottom: 4px; }
+        .type-desc { font-size: 12px; color: #bbb; line-height: 1.4; }
+
+        /* ── FORM ELEMENTS ── */
+        .form-group { margin-bottom: 20px; }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            color: #ccc;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin: 0 0 6px;
+            font-weight: bold;
+        }
+
+        .form-group label .req { color: #f87171; margin-left: 2px; }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            background-color: #444;
+            color: white;
+            border: 1.5px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 15px;
+            margin: 0;
+            height: auto;
+            transition: border-color 0.2s;
+        }
+        .form-group input::placeholder,
+        .form-group textarea::placeholder { color: #888; }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: white;
+        }
+        .form-group select option { background-color: #444; color: white; }
+        .form-group textarea { resize: vertical; min-height: 100px; }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+        .helper-text { font-size: 12px; color: #999; margin-top: 4px; font-style: italic; }
+
+        /* ── SKILLS CHIPS ── */
+        .skills-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+
+        .skill-chip {
+            padding: 6px 14px;
+            border: 1.5px solid rgba(255,255,255,0.3);
+            border-radius: 20px;
+            background: #444;
+            cursor: pointer;
+            font-size: 13px;
+            color: #ccc;
+            transition: all 0.2s;
+            margin: 0;
+            text-transform: none;
+        }
+        .skill-chip:hover { border-color: white; color: white; background-color: #4a4a4a; }
+        .skill-chip.selected {
+            background-color: white;
+            color: #333;
+            border-color: white;
+            font-weight: bold;
+        }
+
+        /* ── SUBJECT ROWS ── */
+        .subject-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .remove-btn {
+            background: none;
+            border: 1px solid #f87171;
+            color: #f87171;
+            border-radius: 6px;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 0;
+            line-height: 1;
+        }
+        .remove-btn:hover { background-color: #f87171; color: white; }
+
+        .add-row-btn {
+            background: transparent;
+            color: white;
+            border: 1.5px dashed rgba(255,255,255,0.4);
+            border-radius: 8px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+        .add-row-btn:hover { border-color: white; background-color: rgba(255,255,255,0.05); }
+
+        /* ── DIVIDER ── */
+        .divider { border: none; border-top: 1px solid rgba(255,255,255,0.15); margin: 20px 0; }
+
+        /* ── HIDDEN ── */
+        .hidden { display: none !important; }
+
+        /* ── SUBMIT AREA ── */
+        .submit-area {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            padding-top: 8px;
+        }
+
+        .btn-cancel {
+            background: transparent;
+            color: white;
+            border: 2px solid rgba(255,255,255,0.4);
+            border-radius: 8px;
+            padding: 12px 28px;
+            font-size: 15px;
+            cursor: pointer;
+            margin: 0;
+            text-transform: uppercase;
+        }
+        .btn-cancel:hover { border-color: white; }
+
+        .btn-submit {
+            background-color: white;
+            color: #333;
             border: none;
-            transition: background 0.2s;
+            border-radius: 8px;
+            padding: 12px 32px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 0;
+            text-transform: uppercase;
         }
+        .btn-submit:hover { background-color: #ddd; }
+        .btn-submit:disabled { background-color: #888; cursor: not-allowed; }
 
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-primary:hover { background: var(--primary-light); }
-        
-        .btn-secondary { background: var(--surface); border: 1.5px solid var(--border); }
-
-        .helper-text {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-top: 0.4rem;
-            font-style: italic;
+        /* ── SUCCESS BANNER ── */
+        .success-banner {
+            background-color: #15803d;
+            border: 2px solid #4ade80;
+            border-radius: 12px;
+            padding: 20px 24px;
+            color: white;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
+        .success-banner.hidden { display: none; }
 
-        @media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
+        /* ── ERROR MSG ── */
+        .field-error { color: #f87171; font-size: 12px; margin-top: 4px; display: none; }
+        .field-error.visible { display: block; }
+
+        @media (max-width: 700px) {
+            .grid-2, .grid-3, .type-selector { grid-template-columns: 1fr; }
+            .subject-row { grid-template-columns: 1fr auto; }
+            .subject-row select { grid-column: 1 / -1; }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Create Opportunity</h1>
-            <p class="subtitle">Post SETA-accredited learnerships and skills development opportunities</p>
-        </header>
+<div class="page-wrapper">
 
-        <div class="card">
-            <div class="section-title">Select Opportunity Type</div>
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <h1>SkillsConnect</h1>
+        <div class="navbar-right">
+            <button class="nav-link-btn" id="dashboardBtn">🏠 Dashboard</button>
+            <button class="nav-link-btn" onclick="window.location.href='/listings'">📋 Listings</button>
+            <button class="logout-btn" id="logoutBtn">Logout</button>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+
+        <!-- SUCCESS BANNER -->
+        <div class="success-banner hidden" id="successBanner">
+            ✅ Opportunity submitted successfully! It will appear in listings after review.
+        </div>
+
+        <!-- PAGE HEADER -->
+        <div class="page-header">
+            <h2>Post an Opportunity</h2>
+            <p>Create a SETA-accredited learnership, apprenticeship or internship listing</p>
+        </div>
+
+        <!-- STEP 1: TYPE SELECTOR -->
+        <div class="form-card">
+            <div class="card-title">1. Opportunity Type</div>
             <div class="type-selector">
                 <div class="type-card active" data-type="learnership" onclick="selectType('learnership')">
                     <span class="type-icon">🎓</span>
                     <div class="type-name">Learnership</div>
-                    <p class="type-description">Theory and workplace experience combination</p>
+                    <p class="type-desc">Theory and workplace experience combination</p>
                 </div>
                 <div class="type-card" data-type="apprenticeship" onclick="selectType('apprenticeship')">
                     <span class="type-icon">🛠️</span>
                     <div class="type-name">Apprenticeship</div>
-                    <p class="type-description">Trade-focused vocational training</p>
+                    <p class="type-desc">Trade-focused vocational training</p>
                 </div>
                 <div class="type-card" data-type="internship" onclick="selectType('internship')">
                     <span class="type-icon">💼</span>
                     <div class="type-name">Internship</div>
-                    <p class="type-description">Work experience for graduates</p>
+                    <p class="type-desc">Work experience for graduates</p>
                 </div>
             </div>
         </div>
 
-        <div class="card" id="accreditation-section">
-            <div class="section-title">Program Accreditation</div>
-            <p class="helper-text" style="margin-bottom: 1.5rem;">Registration details required for accredited programs.</p>
+        <!-- STEP 2: ACCREDITATION (learnership / apprenticeship only) -->
+        <div class="form-card" id="accreditation-section">
+            <div class="card-title">2. Program Accreditation</div>
+            <p class="helper-text" style="margin-bottom:18px;">Required for learnerships and apprenticeships.</p>
             <div class="grid-2">
                 <div class="form-group">
-                    <label for="seta-number">SETA Registration Number <span class="required">*</span></label>
-                    <input type="text" id="seta-number" placeholder="e.g., 17/SETA21/010122">
+                    <label>SETA Registration Number <span class="req">*</span></label>
+                    <input type="text" id="seta-number" placeholder="e.g. 17/SETA21/010122">
+                    <span class="field-error" id="err-seta">Required for this opportunity type.</span>
                 </div>
                 <div class="form-group">
-                    <label for="saqa-id">SAQA Qualification ID <span class="required">*</span></label>
-                    <input type="number" id="saqa-id" placeholder="e.g., 12345">
+                    <label>SAQA Qualification ID <span class="req">*</span></label>
+                    <input type="number" id="saqa-id" placeholder="e.g. 12345">
+                    <span class="field-error" id="err-saqa">Required for this opportunity type.</span>
                 </div>
             </div>
         </div>
 
-        <div class="card">
-            <div class="section-title">Opportunity Details</div>
-            
+        <!-- STEP 3: OPPORTUNITY DETAILS -->
+        <div class="form-card">
+            <div class="card-title">3. Opportunity Details</div>
+
             <div class="form-group">
-                <label for="title">Opportunity Title <span class="required">*</span></label>
-                <input type="text" id="title" placeholder="e.g., Software Engineering Learnership">
+                <label>Opportunity Title <span class="req">*</span></label>
+                <input type="text" id="title" placeholder="e.g. Software Engineering Learnership">
+                <span class="field-error" id="err-title">Please enter a title.</span>
             </div>
 
             <div class="form-group">
-                <label for="company">Company/Organization <span class="required">*</span></label>
-                <input type="text" id="company" placeholder="e.g., Tech Solutions">
+                <label>Company / Organisation <span class="req">*</span></label>
+                <input type="text" id="company" placeholder="e.g. Tech Solutions SA" id="company">
+                <span class="field-error" id="err-company">Please enter your organisation name.</span>
             </div>
 
             <div class="form-group">
-                <label for="description">Detailed Description <span class="required">*</span></label>
-                <textarea id="description" placeholder="Include learning outcomes and duties..." rows="4"></textarea>
+                <label>Description <span class="req">*</span></label>
+                <textarea id="description" rows="5" placeholder="Describe learning outcomes, duties, and what candidates will gain..."></textarea>
+                <span class="field-error" id="err-description">Please add a description.</span>
             </div>
 
             <div class="grid-2">
                 <div class="form-group">
-                    <label for="location">Location <span class="required">*</span></label>
-                    <input type="text" id="location" placeholder="e.g., Johannesburg">
+                    <label>Location <span class="req">*</span></label>
+                    <input type="text" id="location" placeholder="e.g. Johannesburg, Gauteng">
+                    <span class="field-error" id="err-location">Please enter a location.</span>
                 </div>
                 <div class="form-group">
-                    <label for="duration">Duration (Months) <span class="required">*</span></label>
-                    <input type="number" id="duration" min="1" max="24" placeholder="e.g., 12" oninput="limitDuration(this)">
+                    <label>Monthly Stipend (ZAR)</label>
+                    <input type="number" id="stipend" min="0" placeholder="e.g. 5000">
                 </div>
             </div>
 
-            <div class="grid-2">
+            <div class="grid-3">
                 <div class="form-group">
-                    <label>Target Age Bracket <span class="required">*</span></label>
-                    <div style="display: flex; gap: 0.5rem; align-items: center;">
-                        <input type="number" id="min-age" min="0" placeholder="Min" oninput="validateAge(this)">
-                        <span>to</span>
-                        <input type="number" id="max-age" min="0" placeholder="Max" oninput="validateAge(this)">
-                    </div>
-                    <p class="helper-text">Enter integers only (e.g., 18 to 35).</p>
+                    <label>Duration (Months) <span class="req">*</span></label>
+                    <input type="number" id="duration" min="1" max="24" placeholder="e.g. 12">
+                    <span class="field-error" id="err-duration">Please enter duration (1–24 months).</span>
                 </div>
                 <div class="form-group">
-                    <label for="min-nqf">Required NQF Level <span class="required">*</span></label>
+                    <label>Closing Date <span class="req">*</span></label>
+                    <input type="date" id="closing-date">
+                    <span class="field-error" id="err-closing">Please set a closing date.</span>
+                </div>
+                <div class="form-group">
+                    <label>Required NQF Level <span class="req">*</span></label>
                     <select id="min-nqf">
                         <option value="">Select NQF Level</option>
                     </select>
+                    <span class="field-error" id="err-nqf">Please select an NQF level.</span>
                 </div>
             </div>
 
             <div class="grid-2">
                 <div class="form-group">
-                    <label for="closing-date">Closing Date <span class="required">*</span></label>
-                    <input type="date" id="closing-date">
+                    <label>Target Age — Minimum</label>
+                    <input type="number" id="min-age" min="15" max="65" placeholder="e.g. 18">
                 </div>
                 <div class="form-group">
-                    <label for="stipend">Monthly Stipend (ZAR)</label>
-                    <input type="number" id="stipend" min="0" placeholder="e.g., 5000" oninput="limitStipend(this)">
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>Required Skills & Licenses</label>
-                <div class="skills-grid" id="skills-grid">
-                    <div class="skill-chip" onclick="toggleSkill(this)">Communication</div>
-                    <div class="skill-chip" onclick="toggleSkill(this)">Problem Solving</div>
-                    <div class="skill-chip" onclick="toggleSkill(this)">Technical Writing</div>
-                    <div class="skill-chip" onclick="toggleSkill(this)">Physically Fit</div>
-                    <div class="skill-chip" onclick="toggleSkill(this)">Manual Labor Experience</div>
-                    <div class="skill-chip" onclick="toggleSkill(this)">Java Development</div>
-                    <div class="skill-chip" onclick="toggleSkill(this)">C++ Development</div>
-                    <div class="skill-chip" onclick="toggleSkill(this)">Web Technologies</div>
-                    <div class="skill-chip" onclick="toggleSkill(this)">Driver's Licence (Code 8)</div>
-                    <div class="skill-chip" onclick="toggleSkill(this)">Driver's Licence (Code 10)</div>
-                    <div class="skill-chip" onclick="toggleSkill(this)">Driver's Licence (Code 14)</div>
-                    <div class="skill-chip" onclick="toggleSkill(this)">PdP (Professional Driving Permit)</div>
+                    <label>Target Age — Maximum</label>
+                    <input type="number" id="max-age" min="15" max="65" placeholder="e.g. 35">
                 </div>
             </div>
         </div>
 
-        <div class="card">
-            <div class="section-title">Matric Education Requirements</div>
-            <p class="helper-text" style="margin-bottom: 1.5rem;">Specify minimum marks required for key subjects (Max 5).</p>
-            <div id="subject-rows">
-                <div class="grid-2 form-group">
-                    <select class="subject-name" onchange="checkDuplicateSubjects()">
-                        <option value="">Select Subject</option>
-                        <option value="mathematics">Mathematics</option>
-                        <option value="physical-sciences">Physical Sciences</option>
-                        <option value="english-hl">English Home Language</option>
-                        <option value="it">Information Technology</option>
-                        <option value="accounting">Accounting</option>
-                        <option value="biology">Biology</option>
-                    </select>
-                    <input type="number" min="0" max="100" placeholder="Min Mark %" class="subject-mark" oninput="limitMark(this)">
-                </div>
+        <!-- STEP 4: SKILLS -->
+        <div class="form-card">
+            <div class="card-title">4. Required Skills &amp; Licences</div>
+            <p class="helper-text" style="margin-bottom:14px;">Click to toggle. Selected skills will be highlighted.</p>
+            <div class="skills-grid" id="skills-grid">
+                <div class="skill-chip" onclick="toggleSkill(this)">Communication</div>
+                <div class="skill-chip" onclick="toggleSkill(this)">Problem Solving</div>
+                <div class="skill-chip" onclick="toggleSkill(this)">Technical Writing</div>
+                <div class="skill-chip" onclick="toggleSkill(this)">Physically Fit</div>
+                <div class="skill-chip" onclick="toggleSkill(this)">Manual Labour Experience</div>
+                <div class="skill-chip" onclick="toggleSkill(this)">Java Development</div>
+                <div class="skill-chip" onclick="toggleSkill(this)">C++ Development</div>
+                <div class="skill-chip" onclick="toggleSkill(this)">Web Technologies</div>
+                <div class="skill-chip" onclick="toggleSkill(this)">Driver's Licence (Code 8)</div>
+                <div class="skill-chip" onclick="toggleSkill(this)">Driver's Licence (Code 10)</div>
+                <div class="skill-chip" onclick="toggleSkill(this)">Driver's Licence (Code 14)</div>
+                <div class="skill-chip" onclick="toggleSkill(this)">PDP (Professional Driving Permit)</div>
             </div>
-            <button type="button" class="btn-secondary" id="add-subject-btn" style="padding: 0.5rem 1rem; font-size: 0.85rem;" onclick="addSubjectRow()">+ Add Subject</button>
         </div>
 
-        <div class="actions">
-            <button class="btn-primary" onclick="submitForReview()">Submit for Review</button>
+        <!-- STEP 5: EDUCATION REQUIREMENTS -->
+        <div class="form-card">
+            <div class="card-title">5. Matric Subject Requirements</div>
+            <p class="helper-text" style="margin-bottom:18px;">Specify minimum marks for key subjects (max 5).</p>
+
+            <div id="subject-rows"></div>
+
+            <button type="button" class="add-row-btn" id="add-subject-btn" onclick="addSubjectRow()">
+                + Add Subject Requirement
+            </button>
         </div>
+
+        <!-- SUBMIT -->
+        <div class="submit-area">
+            <button class="btn-cancel" onclick="goBack()">Cancel</button>
+            <button class="btn-submit" id="submitBtn" onclick="submitOpportunity()">Submit for Review</button>
+        </div>
+
     </div>
+</div>
 
-    <script>
-        // ── LOAD NQF LEVELS FROM BACKEND ────────────────
-async function loadNQFLevels() {
-    const response = await fetch("http://localhost:3000/nqf-levels");
-    const data     = await response.json();
-    const dropdown = document.getElementById("min-nqf");
-    dropdown.innerHTML = '<option value="">Select NQF Level</option>';
-    data.levels.forEach(nqf => {
-        const option   = document.createElement("option");
-        option.value   = nqf.level;
-        option.text    = `NQF ${nqf.level} - ${nqf.name} (${nqf.example})`;
-        dropdown.appendChild(option);
-    });
-}
+<script type="module">
+    import { auth } from "./firebase.js";
 
-window.onload = () => {
-    loadNQFLevels();
-};
+    // ── Auth guard ────────────────────────────────────────────────────────────
+    const token = localStorage.getItem("token");
+    if (!token) { window.location.href = "/"; }
 
+    auth.onAuthStateChanged(async (user) => {
+        if (!user) { window.location.href = "/"; return; }
 
+        const idTokenResult = await user.getIdTokenResult();
+        const role = idTokenResult.claims.role;
 
-        function selectType(type) {
-            document.querySelectorAll('.type-card').forEach(c => c.classList.remove('active'));
-            document.querySelector(`[data-type="${type}"]`).classList.add('active');
-            const accreditationCard = document.getElementById('accreditation-section');
-            if (type === 'learnership' || type === 'apprenticeship') {
-                accreditationCard.classList.remove('hidden');
-            } else { accreditationCard.classList.add('hidden'); }
+        // Only providers and admins can post
+        if (role && role !== "provider" && role !== "admin") {
+            alert("Only providers can post opportunities.");
+            window.location.href = "/";
+            return;
         }
 
-        function toggleSkill(chip) { chip.classList.toggle('selected'); }
+        // Pre-fill company if provider
+        const freshToken = await user.getIdToken();
+        localStorage.setItem("token", freshToken);
 
-        function validateAge(input) {
-            input.value = Math.floor(input.value);
-            if (input.value < 0 && input.value !== "") { input.value = 0; }
-            const minAge = document.getElementById('min-age');
-            const maxAge = document.getElementById('max-age');
-            if (minAge.value && maxAge.value && parseInt(maxAge.value) < parseInt(minAge.value)) {
-                if (input.id === 'max-age') maxAge.value = minAge.value;
-            }
-        }
-
-        function limitStipend(input) {
-            if (input.value < 0 && input.value !== "") { input.value = 0; }
-        }
-
-        function limitMark(input) {
-            if (input.value > 100) input.value = 100;
-            if (input.value < 0 && input.value !== "") input.value = 0;
-        }
-
-        function limitDuration(input) {
-            if (input.value > 24) input.value = 24;
-            if (input.value < 1 && input.value !== "") input.value = 1;
-        }
-
-        function checkDuplicateSubjects() {
-            const selects = document.querySelectorAll('.subject-name');
-            const selectedValues = [];
-            
-            selects.forEach(select => {
-                if (select.value !== "") {
-                    if (selectedValues.includes(select.value)) {
-                        alert("You have already selected " + select.options[select.selectedIndex].text + ". Please choose a different subject.");
-                        select.value = ""; 
-                    } else {
-                        selectedValues.push(select.value);
-                    }
-                }
+        try {
+            const res = await fetch(`/api/user-profile?uid=${user.uid}`, {
+                headers: { "Authorization": `Bearer ${freshToken}` }
             });
-        }
-
-        function addSubjectRow() {
-            const container = document.getElementById('subject-rows');
-            const rowCount = container.getElementsByClassName('form-group').length;
-
-            if (rowCount >= 5) {
-                alert("You can only add a maximum of 5 education requirements.");
-                return;
+            if (res.ok) {
+                const data = await res.json();
+                if (data.organization) {
+                    document.getElementById("company").value = data.organization;
+                }
             }
+        } catch (e) { /* no-op */ }
 
-            const newRow = document.createElement('div');
-            newRow.className = 'grid-2 form-group';
-            newRow.style.marginTop = "1rem";
-            newRow.innerHTML = `
-                <select class="subject-name" onchange="checkDuplicateSubjects()">
-                    <option value="">Select Subject</option>
-                    <option value="mathematics">Mathematics</option>
-                    <option value="physical-sciences">Physical Sciences</option>
-                    <option value="english-hl">English Home Language</option>
-                    <option value="it">Information Technology</option>
-                    <option value="accounting">Accounting</option>
-                    <option value="biology">Biology</option>
-                </select>
-                <div style="display: flex; gap: 0.5rem; align-items: center;">
-                    <input type="number" min="0" max="100" placeholder="Min Mark %" class="subject-mark" oninput="limitMark(this)">
-                    <button type="button" onclick="this.parentElement.parentElement.remove()" style="background:none; border:none; color:#ff4d4d; cursor:pointer; font-size:1.5rem;">&times;</button>
-                </div>`;
-            container.appendChild(newRow);
+        // Dashboard button
+        document.getElementById("dashboardBtn").addEventListener("click", () => {
+            if (role === "admin")    window.location.href = "/admin-dashboard";
+            else                     window.location.href = "/provider-home";
+        });
+    });
+
+    // Expose submit to global scope
+    window.submitOpportunity = submitOpportunity;
+
+    async function submitOpportunity() {
+        if (!validateForm()) return;
+
+        const btn = document.getElementById("submitBtn");
+        btn.disabled = true;
+        btn.textContent = "Submitting...";
+
+        const selectedType = document.querySelector(".type-card.active")?.dataset.type || "learnership";
+
+        const skills = [...document.querySelectorAll(".skill-chip.selected")]
+            .map(c => c.textContent.trim());
+
+        const subjects = [];
+        document.querySelectorAll(".subject-row").forEach(row => {
+            const subjectEl = row.querySelector(".subject-name");
+            const markEl    = row.querySelector(".subject-mark");
+            if (subjectEl?.value && markEl?.value) {
+                subjects.push({ subject: subjectEl.value, minMark: parseInt(markEl.value) });
+            }
+        });
+
+        const payload = {
+            type:        selectedType,
+            title:       document.getElementById("title").value.trim(),
+            company:     document.getElementById("company").value.trim(),
+            description: document.getElementById("description").value.trim(),
+            location:    document.getElementById("location").value.trim(),
+            stipend:     parseFloat(document.getElementById("stipend").value) || 0,
+            duration:    parseInt(document.getElementById("duration").value) || null,
+            closingDate: document.getElementById("closing-date").value,
+            nqfLevel:    document.getElementById("min-nqf").value,
+            minAge:      parseInt(document.getElementById("min-age").value) || null,
+            maxAge:      parseInt(document.getElementById("max-age").value) || null,
+            skills,
+            subjectRequirements: subjects,
+        };
+
+        if (selectedType !== "internship") {
+            payload.setaNumber = document.getElementById("seta-number").value.trim();
+            payload.saqaId     = document.getElementById("saqa-id").value.trim();
         }
 
-        function submitForReview() { 
-            // Logic to collect all data and send to your /api/opportunities/submit route
-            alert("Opportunity submitted for review."); 
+        const freshToken = localStorage.getItem("token");
+
+        try {
+            const res = await fetch("/api/opportunities/submit", {
+                method:  "POST",
+                headers: {
+                    "Content-Type":  "application/json",
+                    "Authorization": `Bearer ${freshToken}`
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                document.getElementById("successBanner").classList.remove("hidden");
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                document.getElementById("submitBtn").textContent = "Submitted ✓";
+            } else {
+                const data = await res.json();
+                alert("Submission failed: " + (data.error || res.status));
+                btn.disabled = false;
+                btn.textContent = "Submit for Review";
+            }
+        } catch (err) {
+            console.error("Submit error:", err);
+            alert("Could not reach server. Is your backend running?");
+            btn.disabled = false;
+            btn.textContent = "Submit for Review";
         }
-    </script>
+    }
+</script>
+
+<script>
+    // ── Non-module scripts (DOM helpers) ─────────────────────────────────────
+
+    // Load NQF levels
+    async function loadNQFLevels() {
+        try {
+            const res  = await fetch("/nqf-levels");
+            if (!res.ok) { populateFallbackNQF(); return; }
+            const data = await res.json();
+            const dropdown = document.getElementById("min-nqf");
+            dropdown.innerHTML = '<option value="">Select NQF Level</option>';
+            data.levels.forEach(nqf => {
+                const opt  = document.createElement("option");
+                opt.value  = nqf.level;
+                opt.text   = `NQF ${nqf.level} — ${nqf.name}`;
+                dropdown.appendChild(opt);
+            });
+        } catch {
+            populateFallbackNQF();
+        }
+    }
+
+    function populateFallbackNQF() {
+        const levels = [
+            { level: 1, name: "Grade 9" },
+            { level: 2, name: "Grade 10" },
+            { level: 3, name: "Grade 11" },
+            { level: 4, name: "Grade 12 / Matric" },
+            { level: 5, name: "Higher Certificate" },
+            { level: 6, name: "Diploma / Advanced Certificate" },
+            { level: 7, name: "Bachelor's Degree" },
+            { level: 8, name: "Honours / Postgraduate Diploma" },
+            { level: 9, name: "Master's Degree" },
+            { level: 10, name: "Doctoral Degree" },
+        ];
+        const dropdown = document.getElementById("min-nqf");
+        dropdown.innerHTML = '<option value="">Select NQF Level</option>';
+        levels.forEach(n => {
+            const opt = document.createElement("option");
+            opt.value = n.level;
+            opt.text  = `NQF ${n.level} — ${n.name}`;
+            dropdown.appendChild(opt);
+        });
+    }
+
+    window.onload = () => {
+        loadNQFLevels();
+        // Set min closing date to today
+        const today = new Date().toISOString().split("T")[0];
+        document.getElementById("closing-date").min = today;
+    };
+
+    // Type selection
+    window.selectType = function(type) {
+        document.querySelectorAll(".type-card").forEach(c => c.classList.remove("active"));
+        document.querySelector(`[data-type="${type}"]`).classList.add("active");
+        const accSection = document.getElementById("accreditation-section");
+        if (type === "learnership" || type === "apprenticeship") {
+            accSection.classList.remove("hidden");
+        } else {
+            accSection.classList.add("hidden");
+        }
+    };
+
+    // Skills toggle
+    window.toggleSkill = function(chip) { chip.classList.toggle("selected"); };
+
+    // Subject rows
+    const SUBJECTS = [
+        { value: "", label: "Select Subject" },
+        { value: "mathematics", label: "Mathematics" },
+        { value: "mathematical-literacy", label: "Mathematical Literacy" },
+        { value: "physical-sciences", label: "Physical Sciences" },
+        { value: "english-hl", label: "English Home Language" },
+        { value: "english-fal", label: "English First Additional Language" },
+        { value: "it", label: "Information Technology" },
+        { value: "accounting", label: "Accounting" },
+        { value: "biology", label: "Life Sciences / Biology" },
+        { value: "history", label: "History" },
+        { value: "geography", label: "Geography" },
+    ];
+
+    function buildSubjectSelect(selectedValue = "") {
+        return `<select class="subject-name" onchange="checkDuplicateSubjects()">
+            ${SUBJECTS.map(s => `<option value="${s.value}"${s.value === selectedValue ? " selected" : ""}>${s.label}</option>`).join("")}
+        </select>`;
+    }
+
+    window.addSubjectRow = function() {
+        const container = document.getElementById("subject-rows");
+        const existing  = container.querySelectorAll(".subject-row").length;
+        if (existing >= 5) {
+            alert("Maximum 5 subject requirements allowed.");
+            return;
+        }
+        const row = document.createElement("div");
+        row.className = "subject-row";
+        row.innerHTML = `
+            ${buildSubjectSelect()}
+            <input type="number" min="0" max="100" placeholder="Min Mark %" class="subject-mark" oninput="limitMark(this)">
+            <button type="button" class="remove-btn" onclick="this.parentElement.remove()">✕</button>
+        `;
+        // Wire up the inline select
+        row.querySelector(".subject-name").addEventListener("change", checkDuplicateSubjects);
+        container.appendChild(row);
+    };
+
+    window.checkDuplicateSubjects = function() {
+        const selects = document.querySelectorAll(".subject-name");
+        const seen = [];
+        selects.forEach(sel => {
+            if (!sel.value) return;
+            if (seen.includes(sel.value)) {
+                alert(`"${sel.options[sel.selectedIndex].text}" is already added. Choose a different subject.`);
+                sel.value = "";
+            } else {
+                seen.push(sel.value);
+            }
+        });
+    };
+
+    window.limitMark = function(input) {
+        if (input.value > 100) input.value = 100;
+        if (input.value < 0 && input.value !== "") input.value = 0;
+    };
+
+    // Validation
+    function showErr(id, show) {
+        const el = document.getElementById("err-" + id);
+        if (el) el.classList.toggle("visible", show);
+    }
+
+    window.validateForm = function() {
+        let valid = true;
+        const type = document.querySelector(".type-card.active")?.dataset.type;
+
+        if (type !== "internship") {
+            const seta = document.getElementById("seta-number").value.trim();
+            showErr("seta", !seta); if (!seta) valid = false;
+            const saqa = document.getElementById("saqa-id").value.trim();
+            showErr("saqa", !saqa); if (!saqa) valid = false;
+        }
+
+        const title = document.getElementById("title").value.trim();
+        showErr("title", !title); if (!title) valid = false;
+
+        const company = document.getElementById("company").value.trim();
+        showErr("company", !company); if (!company) valid = false;
+
+        const desc = document.getElementById("description").value.trim();
+        showErr("description", !desc); if (!desc) valid = false;
+
+        const loc = document.getElementById("location").value.trim();
+        showErr("location", !loc); if (!loc) valid = false;
+
+        const dur = document.getElementById("duration").value;
+        const durValid = dur && parseInt(dur) >= 1 && parseInt(dur) <= 24;
+        showErr("duration", !durValid); if (!durValid) valid = false;
+
+        const closing = document.getElementById("closing-date").value;
+        showErr("closing", !closing); if (!closing) valid = false;
+
+        const nqf = document.getElementById("min-nqf").value;
+        showErr("nqf", !nqf); if (!nqf) valid = false;
+
+        if (!valid) window.scrollTo({ top: 0, behavior: "smooth" });
+        return valid;
+    };
+
+    window.goBack = function() { window.history.back(); };
+</script>
 </body>
 </html>

@@ -15,7 +15,9 @@
   },
   "jest": {
     "testEnvironment": "node",
-    "testMatch": ["**/__tests__/**/*.test.js"]
+    "testMatch": [
+      "**/__tests__/**/*.test.js"
+    ]
   },
   "repository": {
     "type": "git",
@@ -37,6 +39,7 @@
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^5.2.1",
-    "firebase-admin": "^13.8.0"
+    "firebase-admin": "^13.8.0",
+    "nodemon": "^3.1.14"
   }
 }

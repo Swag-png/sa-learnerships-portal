@@ -1,12 +1,422 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>Admin Dashboard</title>
-    </head>
-    <body>
-        <h1>Welcome, Admin!</h1>
-    <p>You are logged in as a Admin.</p>
-    <button onclick="window.location.href='/'">Logout</button>
-    </body>
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard - SkillsConnect</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .dashboard-wrapper {
+            min-height: 100vh;
+            background-color: #666666;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* NAVBAR */
+        .navbar {
+            background-color: #333333;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid white;
+        }
+
+        .navbar h1 {
+            color: white;
+            font-size: 20px;
+            margin: 0;
+        }
+
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: white;
+            font-size: 14px;
+        }
+
+        .nav-link-btn {
+            background-color: transparent;
+            color: white;
+            border: 2px solid white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 0;
+            text-transform: uppercase;
+        }
+
+        .nav-link-btn:hover {
+            background-color: white;
+            color: #333;
+        }
+
+        .logout-btn {
+            background-color: crimson;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 0;
+        }
+
+        .logout-btn:hover {
+            opacity: 0.85;
+            background-color: crimson;
+            color: white;
+        }
+
+        /* MAIN CONTENT */
+        .dashboard-content {
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* WELCOME CARD */
+        .welcome-card {
+            background-color: #545454;
+            border: 2px solid white;
+            border-radius: 12px;
+            padding: 25px;
+            color: white;
+        }
+
+        .welcome-card h2 {
+            margin: 0 0 8px 0;
+            font-size: 24px;
+        }
+
+        .welcome-card p {
+            margin: 0;
+            color: #ccc;
+            font-size: 14px;
+        }
+
+        /* QUICK ACTIONS */
+        .quick-actions {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            background-color: #545454;
+            border: 2px solid white;
+            border-radius: 12px;
+            padding: 20px 28px;
+            color: white;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+            text-align: center;
+            flex: 1;
+            min-width: 180px;
+            transition: background 0.2s;
+        }
+
+        .action-btn:hover {
+            background-color: white;
+            color: #333;
+        }
+
+        .action-btn .btn-icon {
+            font-size: 24px;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        /* INFO CARDS ROW */
+        .cards-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .info-card {
+            background-color: #545454;
+            border: 2px solid white;
+            border-radius: 12px;
+            padding: 20px;
+            color: white;
+            text-align: center;
+        }
+
+        .info-card h3 {
+            margin: 0 0 8px 0;
+            font-size: 14px;
+            color: #ccc;
+            text-transform: uppercase;
+        }
+
+        .info-card p {
+            margin: 0;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        /* PROFILE SECTION */
+        .profile-section {
+            background-color: #545454;
+            border: 2px solid white;
+            border-radius: 12px;
+            padding: 25px;
+            color: white;
+        }
+
+        .profile-section h2 {
+            margin: 0 0 20px 0;
+            border-left: 5px solid white;
+            padding-left: 10px;
+        }
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .profile-field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .profile-field label {
+            font-size: 12px;
+            color: #ccc;
+            text-transform: uppercase;
+            margin: 0;
+        }
+
+        .profile-field p {
+            margin: 0;
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        /* PERMISSIONS SECTION */
+        .permissions-section {
+            background-color: #545454;
+            border: 2px solid white;
+            border-radius: 12px;
+            padding: 25px;
+            color: white;
+        }
+
+        .permissions-section h2 {
+            margin: 0 0 15px 0;
+            border-left: 5px solid white;
+            padding-left: 10px;
+        }
+
+        .permissions-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .permission-badge {
+            background-color: #333;
+            border: 1px solid white;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+        }
+
+        .loading-indicator {
+            color: #ccc;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-wrapper">
+
+        <!-- NAVBAR -->
+        <nav class="navbar">
+            <h1>SkillsConnect — Admin</h1>
+            <div class="navbar-right">
+                <button class="nav-link-btn" onclick="window.location.href='/listings'">📋 All Listings</button>
+                <button class="nav-link-btn" onclick="window.location.href='/create-opportunity'">➕ Post Opportunity</button>
+                <span id="navName"></span>
+                <button class="logout-btn" id="logoutBtn">Logout</button>
+            </div>
+        </nav>
+
+        <!-- MAIN CONTENT -->
+        <div class="dashboard-content">
+
+            <!-- WELCOME -->
+            <div class="welcome-card">
+                <h2 id="welcomeMsg">Welcome 👋</h2>
+                <p>Admin Dashboard — manage users, listings and platform settings</p>
+            </div>
+
+            <!-- QUICK ACTIONS -->
+            <div class="quick-actions">
+                <button class="action-btn" onclick="window.location.href='/listings'">
+                    <span class="btn-icon">📋</span>Manage Listings
+                </button>
+                <button class="action-btn" onclick="window.location.href='/create-opportunity'">
+                    <span class="btn-icon">➕</span>Post Opportunity
+                </button>
+                <button class="action-btn" id="manageUsersBtn">
+                    <span class="btn-icon">👥</span>Manage Users
+                </button>
+            </div>
+
+            <!-- INFO CARDS -->
+            <div class="cards-row">
+                <div class="info-card">
+                    <h3>Role</h3>
+                    <p>Admin</p>
+                </div>
+                <div class="info-card">
+                    <h3>Username</h3>
+                    <p id="cardUsername">-</p>
+                </div>
+                <div class="info-card">
+                    <h3>Status</h3>
+                    <p id="cardStatus">-</p>
+                </div>
+            </div>
+
+            <!-- PROFILE -->
+            <div class="profile-section">
+                <h2>Admin Profile</h2>
+                <div class="profile-grid">
+                    <div class="profile-field">
+                        <label>Full Name</label>
+                        <p id="profileName" class="loading-indicator">Loading...</p>
+                    </div>
+                    <div class="profile-field">
+                        <label>Email</label>
+                        <p id="profileEmail" class="loading-indicator">Loading...</p>
+                    </div>
+                    <div class="profile-field">
+                        <label>Username</label>
+                        <p id="profileUsername">-</p>
+                    </div>
+                    <div class="profile-field">
+                        <label>Status</label>
+                        <p id="profileStatus">-</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PERMISSIONS -->
+            <div class="permissions-section">
+                <h2>Permissions</h2>
+                <div class="permissions-list" id="permissionsList">
+                    <p style="color:#ccc;">Loading permissions...</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script type="module">
+        import { auth } from "./firebase.js";
+
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+            alert("You must log in first!");
+            window.location.href = "/";
+        }
+
+        // ── Load profile from Firestore via backend ─────────────────────────────
+        auth.onAuthStateChanged(async (user) => {
+            if (!user) {
+                window.location.href = "/";
+                return;
+            }
+
+            // Verify admin role
+            const idTokenResult = await user.getIdTokenResult();
+            const role = idTokenResult.claims.role;
+            if (role && role !== "admin") {
+                alert("Access denied.");
+                window.location.href = "/";
+                return;
+            }
+
+            try {
+                const freshToken = await user.getIdToken();
+                const res = await fetch(`/api/user-profile?uid=${user.uid}`, {
+                    headers: { "Authorization": `Bearer ${freshToken}` }
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    populateProfile(data, user.email);
+                } else {
+                    populateProfile({}, user.email);
+                }
+            } catch (err) {
+                console.error("Profile fetch error:", err);
+                populateProfile({}, user.email);
+            }
+        });
+
+        function populateProfile(data, authEmail) {
+            const fullName   = [data.firstname, data.lastname].filter(Boolean).join(" ") || data.organization || "-";
+            const email      = data.email      || authEmail || "-";
+            const username   = data.username   || "-";
+            const status     = data.status     || "active";
+            const permissions= data.permissions|| [];
+
+            const displayName = fullName !== "-" ? fullName : email;
+
+            document.getElementById("navName").innerText           = displayName;
+            document.getElementById("welcomeMsg").innerText        = "Welcome, " + displayName + " 👋";
+            document.getElementById("cardUsername").innerText      = username;
+            document.getElementById("cardStatus").innerText        = status;
+            document.getElementById("profileName").innerText       = fullName;
+            document.getElementById("profileEmail").innerText      = email;
+            document.getElementById("profileUsername").innerText   = username;
+            document.getElementById("profileStatus").innerText     = status;
+
+            // Permissions
+            const permList = document.getElementById("permissionsList");
+            if (permissions && permissions.length > 0) {
+                permList.innerHTML = "";
+                const permsArray = Array.isArray(permissions) ? permissions : permissions.split(",");
+                permsArray.forEach(perm => {
+                    const badge = document.createElement("span");
+                    badge.className = "permission-badge";
+                    badge.innerText = perm.trim();
+                    permList.appendChild(badge);
+                });
+            } else {
+                // Default admin permissions shown visually
+                permList.innerHTML = "";
+                ["Manage Users", "Manage Listings", "View Reports", "Post Opportunities"].forEach(perm => {
+                    const badge = document.createElement("span");
+                    badge.className = "permission-badge";
+                    badge.innerText = perm;
+                    permList.appendChild(badge);
+                });
+            }
+        }
+
+        // ── Logout ──────────────────────────────────────────────────────────────
+        document.getElementById("logoutBtn").addEventListener("click", async () => {
+            try { await auth.signOut(); } catch (e) { console.error(e); }
+            localStorage.clear();
+            window.location.href = "/";
+        });
+
+        document.getElementById("manageUsersBtn").addEventListener("click", () => {
+            alert("User management page coming soon!");
+        });
+    </script>
+</body>
 </html>

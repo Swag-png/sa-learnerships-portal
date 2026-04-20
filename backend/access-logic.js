@@ -1,14 +1,21 @@
-//The Implementation Unit
+// ─── Role → Allowed Routes ───────────────────────────────────────────────────
+// Each role maps to an array of routes it is permitted to access.
 const rolePermissions = {
-    'applicant': '/applicant-home',
-    'provider': '/provider-home',
-    'applicant': '/api/listings',
-    'admin': '/admin-dashboard'
+    'applicant': ['/api/listings', '/applicant-home'],
+    'provider':  ['/api/listings', '/provider-home', '/create-opportunity', '/api/applicants'],
+    'admin':     ['/api/listings', '/admin-dashboard', '/applicant-home', '/provider-home', '/create-opportunity', '/api/applicants']
 };
 
+/**
+ * Returns true if the given user's role is allowed to access the given route.
+ * @param {{ role: string }} user
+ * @param {string} route
+ */
 function authorize(user, route) {
-    // Check if the route requested matches the allowed route for that specific role
-    // This logic covers all 3 success cases and automatically handles all 6 failure cases
-    return rolePermissions[user.role] === route;
+    if (!user || !user.role) return false;
+    const allowed = rolePermissions[user.role.toLowerCase()];
+    if (!allowed) return false;
+    return allowed.includes(route);
 }
+
 module.exports = { authorize };

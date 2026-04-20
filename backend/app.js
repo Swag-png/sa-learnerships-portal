@@ -24,13 +24,25 @@ function guard(route) {
     };
 }
 
-// Serve signup page
+// ─── Static Page Routes ──────────────────────────────────────────────────────
 app.get(['/signup', '/signup.html'], (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'signup.html'));
 });
 
 app.get('/listing-info', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'listing-info.html'));
+});
+
+app.get('/create-opportunity', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'frontend', 'create-opportunity.html'));
+});
+
+app.get('/applicant-home', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'frontend', 'applicant-home.html'));
+});
+
+app.get('/applicants', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'frontend', 'applicants.html'));
 });
 
 // Serve login page at root
@@ -50,8 +62,25 @@ app.get('/provider-home', (req, res) => {
 });
 
 app.get('/listings', (req, res) => {
-    // Point this to where your HTML actually sits
     res.sendFile(path.join(__dirname, '..', 'frontend', 'listings.html'));
+});
+
+// ─── NQF Levels ──────────────────────────────────────────────────────────────
+app.get('/nqf-levels', (req, res) => {
+    res.json({
+        levels: [
+            { level: 1,  name: "Grade 9",                        example: "ABET Level 4" },
+            { level: 2,  name: "Grade 10",                       example: "Elementary Certificate" },
+            { level: 3,  name: "Grade 11",                       example: "Intermediate Certificate" },
+            { level: 4,  name: "Grade 12 / Matric",              example: "National Senior Certificate" },
+            { level: 5,  name: "Higher Certificate",             example: "Short course / HE Certificate" },
+            { level: 6,  name: "Diploma / Advanced Certificate", example: "National Diploma" },
+            { level: 7,  name: "Bachelor's Degree",              example: "BTech / B-degree" },
+            { level: 8,  name: "Honours / Postgrad Diploma",     example: "Honours Degree" },
+            { level: 9,  name: "Master's Degree",                example: "MTech / Master's" },
+            { level: 10, name: "Doctoral Degree",                example: "DTech / PhD" },
+        ]
+    });
 });
 
 // ─── Applicant Signup ────────────────────────────────────────────────────────
@@ -230,6 +259,146 @@ app.post("/applicant/apply", async(req,res) => {
     }
 
 })
+// ─── User Profile ─────────────────────────────────────────────────────────────
+app.get("/api/user-profile", verifyToken, async (req, res) => {
+    try {
+        const uid     = req.query.uid || req.user.uid;
+        const userDoc = await db.collection("users").doc(uid).get();
+        if (!userDoc.exists) return res.status(404).json({ error: "User not found" });
+        res.json(userDoc.data());
+    } catch (error) {
+        console.error("Profile fetch error:", error);
+        res.status(500).json({ error: "Failed to fetch profile" });
+    }
+});
+
+// ─── Role Lookup (Firestore fallback for login) ───────────────────────────────
+app.get("/api/user-role", verifyToken, async (req, res) => {
+    try {
+        const uid     = req.query.uid || req.user.uid;
+        const userDoc = await db.collection("users").doc(uid).get();
+        if (!userDoc.exists) return res.status(404).json({ error: "User not found" });
+        res.json({ role: userDoc.data().role || null });
+    } catch (error) {
+        console.error("Role lookup error:", error);
+        res.status(500).json({ error: "Failed to look up role" });
+    }
+});
+
+// ─── Backfill Custom Claim ────────────────────────────────────────────────────
+app.post("/api/set-role-claim", verifyToken, async (req, res) => {
+    try {
+        const { uid, role } = req.body;
+        if (!uid || !role) return res.status(400).json({ error: "uid and role are required" });
+        const validRoles = ["applicant", "provider", "admin"];
+        if (!validRoles.includes(role.toLowerCase())) return res.status(400).json({ error: "Invalid role" });
+        await admin.auth().setCustomUserClaims(uid, { role: role.toLowerCase() });
+        res.json({ message: "Custom claim set", role });
+    } catch (error) {
+        console.error("Set role claim error:", error);
+        res.status(500).json({ error: "Failed to set custom claim" });
+    }
+});
+
+// ─── Provider's listings (for applicants filter) ──────────────────────────────
+app.get("/api/provider-listings", verifyToken, async (req, res) => {
+    try {
+        const providerID  = req.query.providerID || req.user.uid;
+        const providerDoc = await db.collection("users").doc(providerID).get();
+        const orgName     = providerDoc.exists ? providerDoc.data().organization : null;
+
+        let snapshot;
+        if (orgName) {
+            snapshot = await db.collection("Opportunities").where("company", "==", orgName).get();
+        } else {
+            snapshot = await db.collection("Opportunities").where("providerID", "==", providerID).get();
+        }
+
+        const listings = [];
+        snapshot.forEach(doc => listings.push({ id: doc.id, title: doc.data().title || "Untitled" }));
+        res.json(listings);
+    } catch (error) {
+        console.error("Provider listings error:", error);
+        res.status(500).json({ error: "Failed to fetch provider listings" });
+    }
+});
+
+// ─── Get Applicants for Provider ─────────────────────────────────────────────
+app.get("/api/applicants", verifyToken, async (req, res) => {
+    try {
+        const providerID  = req.query.providerID || req.user.uid;
+        const providerDoc = await db.collection("users").doc(providerID).get();
+        const orgName     = providerDoc.exists ? providerDoc.data().organization : null;
+
+        let listingIDs    = [];
+        let listingTitles = {};
+        let oppSnapshot;
+
+        if (orgName) {
+            oppSnapshot = await db.collection("Opportunities").where("company", "==", orgName).get();
+        } else {
+            oppSnapshot = await db.collection("Opportunities").where("providerID", "==", providerID).get();
+        }
+
+        oppSnapshot.forEach(doc => {
+            listingIDs.push(doc.id);
+            listingTitles[doc.id] = doc.data().title || "Untitled";
+        });
+
+        if (listingIDs.length === 0) return res.json([]);
+
+        // Chunk into groups of 30 (Firestore "in" limit)
+        const chunks = [];
+        for (let i = 0; i < listingIDs.length; i += 30) chunks.push(listingIDs.slice(i, i + 30));
+
+        let allApplications = [];
+        for (const chunk of chunks) {
+            const snap = await db.collection("applications").where("listingID", "in", chunk).get();
+            snap.forEach(doc => allApplications.push({ id: doc.id, ...doc.data() }));
+        }
+
+        // Join applicant profiles
+        const applicantUIDs = [...new Set(allApplications.map(a => a.applicantID))];
+        const profiles = {};
+        await Promise.all(applicantUIDs.map(async uid => {
+            try {
+                const d = await db.collection("users").doc(uid).get();
+                profiles[uid] = d.exists ? d.data() : {};
+            } catch { profiles[uid] = {}; }
+        }));
+
+        const enriched = allApplications.map(app => ({
+            ...app,
+            listingTitle: listingTitles[app.listingID] || app.listingID,
+            applicant:    profiles[app.applicantID] || {}
+        }));
+
+        res.json(enriched);
+    } catch (error) {
+        console.error("Get applicants error:", error);
+        res.status(500).json({ error: "Failed to fetch applicants" });
+    }
+});
+
+// ─── Update Application Status ────────────────────────────────────────────────
+app.patch("/api/applicants/:applicationID/status", verifyToken, async (req, res) => {
+    try {
+        const { applicationID } = req.params;
+        const { status }        = req.body;
+        const valid = ["pending", "reviewing", "shortlisted", "accepted", "rejected"];
+        if (!valid.includes(status)) return res.status(400).json({ error: "Invalid status" });
+
+        await db.collection("applications").doc(applicationID).update({
+            status,
+            updatedAt: new Date().toISOString()
+        });
+        res.json({ message: "Status updated", applicationID, status });
+    } catch (error) {
+        console.error("Status update error:", error);
+        res.status(500).json({ error: "Failed to update status" });
+    }
+});
+
 // ✅ Export for testing
 module.exports = app;
 
@@ -240,4 +409,3 @@ if (process.env.NODE_ENV !== "test") {
     console.log(`Server running on http://localhost:${PORT}`);
 }); 
 }
-

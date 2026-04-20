@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Applicants | SkillsConnect</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .page-wrapper {
+            min-height: 100vh;
+            background-color: #666666;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── NAVBAR ── */
+        .navbar {
+            background-color: #444444;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid white;
+        }
+
+        .navbar h1 { color: white; font-size: 20px; margin: 0; }
+
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .nav-link-btn {
+            background-color: transparent;
+            color: white;
+            border: 2px solid white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 0;
+            text-transform: uppercase;
+        }
+        .nav-link-btn:hover { background-color: white; color: #444; }
+
+        .logout-btn {
+            background-color: crimson;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 0;
+        }
+        .logout-btn:hover { opacity: 0.85; }
+
+        /* ── MAIN ── */
+        .main-content {
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* ── PAGE HEADER ── */
+        .page-header {
+            background-color: #545454;
+            border: 2px solid white;
+            border-radius: 12px;
+            padding: 25px;
+            color: white;
+        }
+        .page-header h2 { margin: 0 0 6px; font-size: 24px; }
+        .page-header p  { margin: 0; color: #ccc; font-size: 14px; }
+
+        /* ── FILTER BAR ── */
+        .filter-bar {
+            background-color: #545454;
+            border: 2px solid white;
+            border-radius: 12px;
+            padding: 18px 24px;
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-bar label {
+            color: #ccc;
+            font-size: 13px;
+            text-transform: uppercase;
+            margin: 0;
+        }
+
+        .filter-bar select,
+        .filter-bar input {
+            background-color: #444;
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 14px;
+            margin: 0;
+            height: auto;
+        }
+
+        .filter-bar select option { background-color: #444; }
+
+        .filter-btn {
+            background-color: transparent;
+            color: white;
+            border: 2px solid white;
+            border-radius: 8px;
+            padding: 6px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            margin: 0;
+            text-transform: uppercase;
+        }
+        .filter-btn:hover { background-color: white; color: #333; }
+
+        /* ── STATS ROW ── */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        .stat-card {
+            background-color: #545454;
+            border: 2px solid white;
+            border-radius: 12px;
+            padding: 18px;
+            color: white;
+            text-align: center;
+        }
+        .stat-card h3 { margin: 0 0 6px; font-size: 13px; color: #ccc; text-transform: uppercase; }
+        .stat-card p  { margin: 0; font-size: 22px; font-weight: bold; }
+
+        /* ── APPLICANTS TABLE ── */
+        .table-section {
+            background-color: #545454;
+            border: 2px solid white;
+            border-radius: 12px;
+            padding: 25px;
+            color: white;
+        }
+
+        .table-section h2 {
+            margin: 0 0 20px;
+            border-left: 5px solid white;
+            padding-left: 10px;
+            font-size: 18px;
+        }
+
+        .applicants-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .applicants-table th {
+            text-align: left;
+            padding: 10px 14px;
+            font-size: 12px;
+            color: #bbb;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .applicants-table td {
+            padding: 14px;
+            font-size: 14px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            vertical-align: middle;
+        }
+
+        .applicants-table tr:last-child td { border-bottom: none; }
+
+        .applicants-table tr:hover td { background-color: rgba(255,255,255,0.05); }
+
+        /* Status badges */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: capitalize;
+        }
+        .status-pending    { background-color: #b45309; color: white; }
+        .status-reviewing  { background-color: #1d4ed8; color: white; }
+        .status-shortlisted{ background-color: #6d28d9; color: white; }
+        .status-accepted   { background-color: #15803d; color: white; }
+        .status-rejected   { background-color: #991b1b; color: white; }
+
+        /* Action buttons */
+        .actions-cell {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .action-small {
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            border: 1px solid white;
+            background: transparent;
+            color: white;
+            margin: 0;
+            text-transform: none;
+        }
+        .action-small:hover { background-color: white; color: #333; }
+        .action-small.accept { border-color: #4ade80; color: #4ade80; }
+        .action-small.accept:hover { background-color: #4ade80; color: #111; }
+        .action-small.reject { border-color: #f87171; color: #f87171; }
+        .action-small.reject:hover { background-color: #f87171; color: #111; }
+        .action-small.shortlist { border-color: #c084fc; color: #c084fc; }
+        .action-small.shortlist:hover { background-color: #c084fc; color: #111; }
+
+        /* ── MODAL ── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-overlay.open { display: flex; }
+
+        .modal {
+            background-color: #545454;
+            border: 2px solid white;
+            border-radius: 12px;
+            padding: 30px;
+            color: white;
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .modal h2 { margin: 0 0 20px; border-left: 5px solid white; padding-left: 10px; }
+
+        .modal-field { margin-bottom: 14px; }
+        .modal-field label { font-size: 12px; color: #ccc; text-transform: uppercase; display: block; margin-bottom: 4px; }
+        .modal-field p { margin: 0; font-size: 15px; font-weight: bold; }
+
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 22px;
+            cursor: pointer;
+            margin: 0;
+            padding: 0;
+        }
+        .modal-close:hover { color: #ccc; background: none; }
+
+        .cv-link {
+            color: #7dd3fc;
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        /* ── EMPTY / ERROR STATES ── */
+        .empty-msg { color: #ccc; text-align: center; padding: 40px 0; }
+        .error-msg { color: #f87171; text-align: center; padding: 40px 0; }
+    </style>
+</head>
+<body>
+<div class="page-wrapper">
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <h1>SkillsConnect</h1>
+        <div class="navbar-right">
+            <button class="nav-link-btn" onclick="window.location.href='/provider-home'">🏠 Dashboard</button>
+            <button class="nav-link-btn" onclick="window.location.href='/listings'">📋 Listings</button>
+            <button class="nav-link-btn" onclick="window.location.href='/create-opportunity'">➕ Post</button>
+            <button class="logout-btn" id="logoutBtn">Logout</button>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+
+        <!-- PAGE HEADER -->
+        <div class="page-header">
+            <h2>Applicant Management</h2>
+            <p>Review and manage applicants for your posted opportunities</p>
+        </div>
+
+        <!-- FILTER BAR -->
+        <div class="filter-bar">
+            <label>Filter by listing:</label>
+            <select id="listingFilter">
+                <option value="all">All Listings</option>
+            </select>
+
+            <label>Status:</label>
+            <select id="statusFilter">
+                <option value="all">All Statuses</option>
+                <option value="pending">Pending</option>
+                <option value="reviewing">Reviewing</option>
+                <option value="shortlisted">Shortlisted</option>
+                <option value="accepted">Accepted</option>
+                <option value="rejected">Rejected</option>
+            </select>
+
+            <input type="text" id="searchInput" placeholder="Search by name or email..." style="min-width:200px;">
+            <button class="filter-btn" id="applyFiltersBtn">Apply</button>
+            <button class="filter-btn" id="clearFiltersBtn">Clear</button>
+        </div>
+
+        <!-- STATS -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <h3>Total</h3>
+                <p id="statTotal">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Pending</h3>
+                <p id="statPending">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Shortlisted</h3>
+                <p id="statShortlisted">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Accepted</h3>
+                <p id="statAccepted">0</p>
+            </div>
+        </div>
+
+        <!-- TABLE -->
+        <div class="table-section">
+            <h2>Applicants</h2>
+            <table class="applicants-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>City</th>
+                        <th>Listing</th>
+                        <th>Applied</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="applicantsBody">
+                    <tr><td colspan="7" class="empty-msg">Loading applicants...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+
+<!-- APPLICANT DETAIL MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+        <button class="modal-close" id="modalClose">✕</button>
+        <h2>Applicant Details</h2>
+        <div class="modal-field"><label>Full Name</label><p id="mName">-</p></div>
+        <div class="modal-field"><label>Email</label><p id="mEmail">-</p></div>
+        <div class="modal-field"><label>Phone</label><p id="mPhone">-</p></div>
+        <div class="modal-field"><label>City</label><p id="mCity">-</p></div>
+        <div class="modal-field"><label>Institution</label><p id="mInstitution">-</p></div>
+        <div class="modal-field"><label>Applied For</label><p id="mListing">-</p></div>
+        <div class="modal-field"><label>Application Status</label><p id="mStatus">-</p></div>
+        <div class="modal-field"><label>CV</label><p id="mCv">-</p></div>
+    </div>
+</div>
+
+<script type="module">
+    import { auth } from "./firebase.js";
+
+    const token = localStorage.getItem("token");
+    if (!token) { window.location.href = "/"; }
+
+    // ── State ──────────────────────────────────────────────────────────────────
+    let allApplications = []; // raw from backend
+    let allListings     = {}; // listingID → title map
+    let providerUID     = null;
+
+    // ── Auth guard ─────────────────────────────────────────────────────────────
+    auth.onAuthStateChanged(async (user) => {
+        if (!user) { window.location.href = "/"; return; }
+
+        const idTokenResult = await user.getIdTokenResult();
+        const role = idTokenResult.claims.role;
+        if (role && role !== "provider" && role !== "admin") {
+            alert("Access denied. Providers only.");
+            window.location.href = "/";
+            return;
+        }
+
+        providerUID = user.uid;
+        const freshToken = await user.getIdToken();
+        localStorage.setItem("token", freshToken);
+
+        await loadProviderListings(freshToken, user.uid);
+        await loadApplications(freshToken, user.uid);
+    });
+
+    // ── Load this provider's listings for the filter dropdown ─────────────────
+    async function loadProviderListings(freshToken, uid) {
+        try {
+            const res = await fetch(`/api/provider-listings?providerID=${uid}`, {
+                headers: { "Authorization": `Bearer ${freshToken}` }
+            });
+            if (!res.ok) return;
+            const listings = await res.json();
+
+            const select = document.getElementById("listingFilter");
+            listings.forEach(l => {
+                allListings[l.id] = l.title;
+                const opt = document.createElement("option");
+                opt.value = l.id;
+                opt.textContent = l.title;
+                select.appendChild(opt);
+            });
+        } catch (err) {
+            console.error("Failed to load listings:", err);
+        }
+    }
+
+    // ── Load applications for this provider ────────────────────────────────────
+    async function loadApplications(freshToken, uid) {
+        try {
+            const res = await fetch(`/api/applicants?providerID=${uid}`, {
+                headers: { "Authorization": `Bearer ${freshToken}` }
+            });
+
+            if (!res.ok) {
+                const body = document.getElementById("applicantsBody");
+                body.innerHTML = `<tr><td colspan="7" class="error-msg">Failed to load applicants (${res.status}).</td></tr>`;
+                return;
+            }
+
+            allApplications = await res.json();
+            updateStats(allApplications);
+            renderTable(allApplications);
+
+        } catch (err) {
+            console.error("Load applications error:", err);
+            document.getElementById("applicantsBody").innerHTML =
+                `<tr><td colspan="7" class="error-msg">Error loading data. Check your connection.</td></tr>`;
+        }
+    }
+
+    // ── Render table ───────────────────────────────────────────────────────────
+    function renderTable(applications) {
+        const body = document.getElementById("applicantsBody");
+
+        if (!applications || applications.length === 0) {
+            body.innerHTML = `<tr><td colspan="7" class="empty-msg">No applicants found.</td></tr>`;
+            return;
+        }
+
+        body.innerHTML = applications.map(app => {
+            const listingTitle = allListings[app.listingID] || app.listingID || "-";
+            const appliedDate  = app.createdAt ? new Date(app.createdAt).toLocaleDateString("en-ZA") : "-";
+            const statusClass  = "status-" + (app.status || "pending").toLowerCase().replace(/\s+/g, "-");
+            const fullName     = [app.applicant?.firstname, app.applicant?.lastname].filter(Boolean).join(" ") || "-";
+
+            return `
+            <tr>
+                <td>
+                    <span class="cv-link" data-id="${app.id}">${fullName}</span>
+                </td>
+                <td>${app.applicant?.email || "-"}</td>
+                <td>${app.applicant?.city  || "-"}</td>
+                <td>${listingTitle}</td>
+                <td>${appliedDate}</td>
+                <td>
+                    <span class="status-badge ${statusClass}">
+                        ${app.status || "pending"}
+                    </span>
+                </td>
+                <td>
+                    <div class="actions-cell">
+                        <button class="action-small" onclick="openModal('${app.id}')">View</button>
+                        <button class="action-small shortlist" onclick="updateStatus('${app.id}', 'shortlisted')">Shortlist</button>
+                        <button class="action-small accept"    onclick="updateStatus('${app.id}', 'accepted')">Accept</button>
+                        <button class="action-small reject"    onclick="updateStatus('${app.id}', 'rejected')">Reject</button>
+                    </div>
+                </td>
+            </tr>`;
+        }).join("");
+
+        // Name click → open modal
+        document.querySelectorAll(".cv-link[data-id]").forEach(el => {
+            el.addEventListener("click", () => openModal(el.dataset.id));
+        });
+    }
+
+    // ── Stats ──────────────────────────────────────────────────────────────────
+    function updateStats(applications) {
+        document.getElementById("statTotal").innerText =
+            applications.length;
+        document.getElementById("statPending").innerText =
+            applications.filter(a => (a.status || "pending") === "pending").length;
+        document.getElementById("statShortlisted").innerText =
+            applications.filter(a => a.status === "shortlisted").length;
+        document.getElementById("statAccepted").innerText =
+            applications.filter(a => a.status === "accepted").length;
+    }
+
+    // ── Update status ──────────────────────────────────────────────────────────
+    window.updateStatus = async function(applicationID, newStatus) {
+        const freshToken = localStorage.getItem("token");
+        try {
+            const res = await fetch(`/api/applicants/${applicationID}/status`, {
+                method:  "PATCH",
+                headers: {
+                    "Content-Type":  "application/json",
+                    "Authorization": `Bearer ${freshToken}`
+                },
+                body: JSON.stringify({ status: newStatus })
+            });
+
+            if (res.ok) {
+                // Update local state and re-render
+                const app = allApplications.find(a => a.id === applicationID);
+                if (app) app.status = newStatus;
+                applyFilters();
+                updateStats(allApplications);
+            } else {
+                const data = await res.json();
+                alert("Failed to update status: " + (data.error || res.status));
+            }
+        } catch (err) {
+            console.error("Status update error:", err);
+            alert("Could not reach server.");
+        }
+    };
+
+    // ── Modal ──────────────────────────────────────────────────────────────────
+    window.openModal = function(applicationID) {
+        const app = allApplications.find(a => a.id === applicationID);
+        if (!app) return;
+
+        const fullName = [app.applicant?.firstname, app.applicant?.lastname].filter(Boolean).join(" ") || "-";
+        const listingTitle = allListings[app.listingID] || app.listingID || "-";
+
+        document.getElementById("mName").innerText        = fullName;
+        document.getElementById("mEmail").innerText       = app.applicant?.email       || "-";
+        document.getElementById("mPhone").innerText       = app.applicant?.phonenumber || "-";
+        document.getElementById("mCity").innerText        = app.applicant?.city        || "-";
+        document.getElementById("mInstitution").innerText = app.applicant?.institution || "-";
+        document.getElementById("mListing").innerText     = listingTitle;
+        document.getElementById("mStatus").innerText      = app.status || "pending";
+
+        const cvEl = document.getElementById("mCv");
+        if (app.applicant?.cv) {
+            cvEl.innerHTML = `<a href="${app.applicant.cv}" target="_blank" class="cv-link">Download CV</a>`;
+        } else {
+            cvEl.innerText = "No CV uploaded";
+        }
+
+        document.getElementById("modalOverlay").classList.add("open");
+    };
+
+    document.getElementById("modalClose").addEventListener("click", () => {
+        document.getElementById("modalOverlay").classList.remove("open");
+    });
+
+    document.getElementById("modalOverlay").addEventListener("click", (e) => {
+        if (e.target === document.getElementById("modalOverlay")) {
+            document.getElementById("modalOverlay").classList.remove("open");
+        }
+    });
+
+    // ── Filters ────────────────────────────────────────────────────────────────
+    function applyFilters() {
+        const listingVal = document.getElementById("listingFilter").value;
+        const statusVal  = document.getElementById("statusFilter").value;
+        const searchVal  = document.getElementById("searchInput").value.toLowerCase().trim();
+
+        const filtered = allApplications.filter(app => {
+            const matchListing = listingVal === "all" || app.listingID === listingVal;
+            const matchStatus  = statusVal  === "all" || (app.status || "pending") === statusVal;
+            const fullName     = [app.applicant?.firstname, app.applicant?.lastname].filter(Boolean).join(" ").toLowerCase();
+            const email        = (app.applicant?.email || "").toLowerCase();
+            const matchSearch  = !searchVal || fullName.includes(searchVal) || email.includes(searchVal);
+            return matchListing && matchStatus && matchSearch;
+        });
+
+        renderTable(filtered);
+    }
+
+    document.getElementById("applyFiltersBtn").addEventListener("click", applyFilters);
+
+    document.getElementById("clearFiltersBtn").addEventListener("click", () => {
+        document.getElementById("listingFilter").value = "all";
+        document.getElementById("statusFilter").value  = "all";
+        document.getElementById("searchInput").value   = "";
+        renderTable(allApplications);
+    });
+
+    document.getElementById("searchInput").addEventListener("input", applyFilters);
+
+    // ── Logout ─────────────────────────────────────────────────────────────────
+    document.getElementById("logoutBtn").addEventListener("click", async () => {
+        try { await auth.signOut(); } catch (e) { console.error(e); }
+        localStorage.clear();
+        window.location.href = "/";
+    });
+</script>
+</body>
+</html>
