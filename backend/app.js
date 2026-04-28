@@ -48,7 +48,6 @@ app.get('/provider-home', (req, res) => {
 });
 
 app.get('/listings', (req, res) => {
-    // Point this to where your HTML actually sits
     res.sendFile(path.join(__dirname, '..', 'frontend', 'listings.html'));
 });
 
